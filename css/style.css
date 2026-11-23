@@ -1,0 +1,733 @@
+/* [AI] Bo góc nhỏ: đổi độ bo ở biến --r (mọi nơi) và --r2 (khung ảnh). Đổi màu chủ đạo ở biến --brand.
+   Khung ảnh trống dùng màu nền --ph. */
+:root{--brand:#007a3b;--brand-d:#006330;--mint:#e7f6f1;--ink:#1d2228;--muted:#566070;--line:#e5e7eb;--soft:#f3f4f6;--ph:#e9ecee;
+  --chip:#fdeee3;--chip-tx:#7a3e1d;--red:#d93025;--ok:#1a8a4c;--r:4px;--r2:6px;--foot:#e9eef0;--dark:#383c47}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0;background:none;color:inherit;text-align:inherit}
+a{color:inherit;text-decoration:none}
+ul{padding:0;list-style:none}
+.wrap{max-width:1232px;margin:0 auto;padding:0 16px}
+:where(input:not([type=radio]):not([type=checkbox]),select){padding:10px 12px;border:1px solid #c8ccd1;border-radius:var(--r);background:#fff}
+input:focus,select:focus,button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+input[type=checkbox],input[type=radio]{accent-color:var(--brand)}
+
+/* Khung ảnh trống: nền xám, ảnh (nếu có) phủ kín. Không có ảnh thì chỉ còn khung xám. */
+.thumb,.logoBox,.catImg,.qIcon,.pic,.videoBox,.emptyArt{position:relative;background:var(--ph);overflow:hidden;display:block}
+.thumb img,.logoBox img,.catImg img,.qIcon img,.pic img,.emptyArt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- HEADER ---------- */
+.top{background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.1);position:relative;z-index:10}
+.bar{display:flex;align-items:center;gap:16px;min-height:80px;padding:0 40px}
+.logo{font-size:28px;font-weight:800;letter-spacing:-1.2px;color:var(--brand);text-align:left}
+.logo span{color:var(--ink)}
+.seg{display:flex;background:var(--soft);border-radius:var(--r);padding:4px}
+.seg button{padding:9px 28px;border-radius:3px;font-weight:600;color:#6b7280;transition:.15s}
+.seg button.active{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.loc{display:flex;align-items:center;gap:8px;color:#1769d1;font-size:14px;font-weight:500;white-space:nowrap;padding:6px 4px}
+.search{flex:1;min-width:160px;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border:1px solid #c8ccd1;border-radius:var(--r);background:#fff}
+.search:focus-within{outline:2px solid var(--brand);outline-offset:1px}
+.search input{flex:1;min-width:0;border:0;padding:0;outline:0;background:none;font-size:14px}
+.search button{display:grid;place-items:center;color:var(--ink)}
+.textBtn{padding:8px 10px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+.textBtn.active{border-color:var(--brand)}
+.cartBtn{height:44px;min-width:76px;padding:0 16px;border-radius:var(--r);background:var(--mint);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+.loginBtn{height:44px;padding:0 24px;border-radius:var(--r);background:var(--brand);color:#fff;font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:.15s}
+.loginBtn:hover{background:var(--brand-d)}
+
+/* ---------- TRANG CHỦ ---------- */
+/* Hàng ô nhanh: lưới đều, nổi lên che mép dưới hero. Ô danh mục dùng chung kiểu thẻ này. */
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:12px;margin-top:-44px;position:relative;z-index:2}
+.qk,.cat{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 8px 12px;background:#fff;border:1px solid var(--line);border-radius:var(--r2);
+  font-size:14px;font-weight:600;line-height:1.3;text-align:center;color:var(--ink);transition:.15s}
+.qk{border-color:transparent;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.qk:hover,.cat:hover{border-color:var(--brand);background:#f1fbf6;transform:translateY(-2px)}
+.qIcon{width:64px;height:64px;border-radius:var(--r2)}
+
+/* Hero: video làm nền toàn chiều rộng */
+.hero{--hh:clamp(420px,68vh,620px);position:relative;isolation:isolate;min-height:var(--hh);display:flex;align-items:center;color:#fff;
+  background:linear-gradient(135deg,#0a3b25,#00b14f);overflow:hidden}
+.heroMedia{position:absolute;inset:0;z-index:-2}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+.slide.on{opacity:1}
+.heroDots{position:absolute;left:50%;transform:translateX(-50%);bottom:64px;display:flex;gap:8px;align-items:center}
+.heroDots button{position:relative;width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.5);transition:.25s}
+.heroDots button::after{content:"";position:absolute;inset:-8px}
+.heroDots button.on{width:26px;background:#fff}
+.heroMedia video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.heroMedia iframe{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:0;pointer-events:none;
+  width:max(100vw,calc(var(--hh)*1.7778));height:max(56.25vw,var(--hh))}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,20,13,.8) 0%,rgba(6,20,13,.45) 55%,rgba(6,20,13,.18) 100%)}
+.heroIn{padding-top:56px;padding-bottom:104px}
+.hello{font-weight:600;color:rgba(255,255,255,.85)}
+.hero h1{font-size:clamp(34px,5.4vw,68px);line-height:1.08;font-weight:800;letter-spacing:-1.5px;margin:6px 0 16px;text-shadow:0 2px 20px rgba(0,0,0,.35)}
+.codes{font-size:15px;color:rgba(255,255,255,.92);max-width:460px}
+.codes b{background:rgba(255,255,255,.2);padding:1px 8px;border-radius:4px}
+.heroSound{position:absolute;right:16px;bottom:64px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px);transition:.15s}
+.heroSound:hover{background:rgba(0,0,0,.7)}
+
+h2{font-size:24px;font-weight:700;margin:48px 0 16px;letter-spacing:-.3px}
+.secHead{display:flex;justify-content:space-between;align-items:baseline;margin:48px 0 16px}
+.secHead h2{margin:0}
+.more{font-size:14px;font-weight:600}
+.sub{color:#555;margin:-8px 0 14px;font-size:14px}
+
+.railWrap{position:relative}
+.rail{display:flex;gap:20px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding:4px 2px 8px}
+.rail::-webkit-scrollbar{display:none}
+.next{position:absolute;right:-14px;top:42%;transform:translateY(-50%);width:40px;height:40px;border-radius:var(--r);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.22);font-size:24px;line-height:1;display:grid;place-items:center;text-align:center}
+.next:hover{background:var(--mint)}
+
+.cats{gap:12px}
+.cat{flex:0 0 132px}
+.catImg{width:100%;aspect-ratio:1;border-radius:var(--r)}
+
+.store{flex:0 0 164px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%}
+.logoBox{width:100%;aspect-ratio:1;border-radius:var(--r2);margin-bottom:10px}
+.sname{font-size:16px;font-weight:700;line-height:1.35}
+.smeta{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:6px}
+.chip{background:var(--chip);color:var(--chip-tx);font-size:12px;padding:2px 6px;border-radius:2px}
+.storeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:28px 20px}
+.loadMore{display:block;margin:36px auto 0;padding:13px 48px;border-radius:var(--r);background:var(--mint);color:#17483a;font-weight:700;transition:.15s}
+.loadMore:hover{background:#d4efe5}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.chk{display:flex;gap:6px;align-items:center;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+.rail .card{flex:0 0 250px}
+.card{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:box-shadow .2s}
+.card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.pic{height:150px}
+.promo{position:absolute;top:10px;left:0;background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:0 var(--r) var(--r) 0;z-index:1}
+.heart{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:var(--r);background:#fff;font-size:18px;color:#888;display:grid;place-items:center;text-align:center;z-index:1}
+.heart.on{color:var(--red)}
+.info{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.info small{color:var(--muted)}
+.info .btn{margin-top:auto}
+.price{font-weight:800;font-size:18px}
+.empty{padding:32px;text-align:center;color:var(--muted);grid-column:1/-1}
+
+.btn{background:var(--brand);color:#fff;padding:11px 22px;border-radius:var(--r);font-weight:700;transition:.15s;text-align:center}
+.btn:hover{background:var(--brand-d)}.btn:active{transform:scale(.98)}
+.btn:disabled{background:#eceeef;color:#a0a5ab;cursor:not-allowed;transform:none}
+.btn.block{display:block;width:100%;padding:13px}
+.btn.sm{padding:6px 14px;font-size:14px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid #9aa1a9}
+.btn.ghost:hover{background:var(--soft)}
+
+/* ---------- FAQ ---------- */
+.faq{background:#f5f5f5;border:1px solid #ececec;border-radius:var(--r2);overflow:hidden}
+.faq details{border-top:1px solid #e6e6e6}
+.faq details:first-child{border-top:0}
+.faq summary{padding:14px 16px;cursor:pointer;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";width:8px;height:8px;border-right:2px solid #666;border-bottom:2px solid #666;transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+.faq details[open] summary::after{transform:rotate(-135deg)}
+.faq p{padding:0 16px 16px;color:#555;font-size:14px}
+
+/* ---------- ĐẶT XE ---------- */
+.panel{border:1px solid var(--line);border-radius:var(--r2);padding:20px;display:grid;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:4px;font-weight:600}
+.note{font-size:13px;color:#4b5560;background:#effaf4;border-left:3px solid var(--brand);padding:8px 12px}
+#vehicles{display:grid;gap:10px}
+.veh{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r2);cursor:pointer;transition:.15s}
+.veh:hover{border-color:#999}
+.veh.sel{border:2px solid var(--brand);background:#f1fbf6;padding:11px}
+.veh div{flex:1}.veh small{color:var(--muted);display:block}
+
+/* ---------- THÀNH PHẦN DÙNG CHUNG CHO MODAL + GIỎ HÀNG ---------- */
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.mi{display:grid;flex:1}.mi small{color:var(--muted)}
+.qty{display:inline-flex;align-items:center;gap:8px}
+.qty i{font-style:normal;min-width:18px;text-align:center}
+.qty button{background:var(--soft);border-radius:var(--r);width:26px;height:26px;display:grid;place-items:center;text-align:center}
+.ico{color:#888;padding:2px 6px}
+.link{color:var(--red);margin:8px 0;text-decoration:underline}
+.link2{color:var(--brand-d);font-weight:600;text-decoration:underline}
+.vbox{display:flex;gap:8px;margin:12px 0 4px}.vbox input{flex:1;text-transform:uppercase}
+.msg{font-size:14px;min-height:20px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--red)}
+.pay{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pay label{display:flex;font-weight:500;border:1px solid var(--line);padding:6px 12px;border-radius:var(--r);align-items:center;gap:6px;margin:0}
+.sum .row.total{font-size:20px;font-weight:800;border:0}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.opt{display:flex;justify-content:space-between;width:100%;padding:12px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px}
+.opt:hover{border-color:#999}
+.opt.sel{border:2px solid var(--brand);background:#f1fbf6;padding:11px;font-weight:600}
+.qr{display:flex;gap:16px;align-items:center;border:1px solid #cfe9db;background:#f6fcf9;border-radius:var(--r2);padding:14px;margin:10px 0}
+.qr img{width:170px;height:170px;object-fit:contain;background:#fff;border-radius:var(--r);flex:none}
+.qrInfo{display:grid;gap:3px;font-size:14px;min-width:0;word-break:break-word}
+.qrInfo small{color:var(--muted);margin-top:6px}
+.qr .msg{flex:1}
+
+/* ---------- MODAL ---------- */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:20;padding:12px}
+.box{background:#fff;border-radius:var(--r2);width:min(560px,100%);max-height:92vh;overflow:auto;padding:24px;position:relative;animation:pop .18s}
+@keyframes pop{from{transform:translateY(10px);opacity:0}}
+.x{position:absolute;top:10px;right:14px;font-size:20px;width:32px;height:32px}
+.box h2{font-size:22px;margin:0 0 12px}
+.box .sub{margin:0 0 8px}
+.menuRow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+
+/* ---------- GIỎ HÀNG: ngăn kéo bên phải ---------- */
+#drawerWrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;justify-content:flex-end}
+#drawer{background:#fff;width:min(480px,100%);height:100%;animation:slide .22s ease-out}
+@keyframes slide{from{transform:translateX(40px);opacity:0}}
+#drawerBody{display:flex;flex-direction:column;height:100%}
+.dHead{padding:18px 20px 6px}
+.dx{width:36px;height:36px;display:grid;place-items:center;color:#333;margin-left:-8px}
+.dTitle{font-size:22px;margin:0;padding:0 20px 12px;border-bottom:1px solid var(--line)}
+.dScroll{flex:1;overflow:auto;padding:0 20px 16px}
+.dFoot{border-top:1px solid var(--line);padding:14px 20px 18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+.dFoot .row{padding:5px 0;border:0}
+.dFoot .row.total{padding:8px 0}
+.line{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.line .thumb{width:64px;height:64px;flex:none}
+.lmeta{flex:1;display:grid;gap:4px;min-width:0}
+.lmeta small{color:var(--muted)}
+.dEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px 80px;gap:8px}
+.dEmpty .emptyArt{width:180px;height:150px;margin-bottom:16px;background:transparent}
+.dEmpty h3{font-size:20px;font-weight:500}
+.dEmpty p{font-size:13px;color:var(--muted)}
+.dEmpty .link2{margin-top:14px;text-decoration:none;color:#1769d1;font-weight:500}
+
+/* ---------- ĐƠN HÀNG ---------- */
+.order{border:1px solid var(--line);border-radius:var(--r2);padding:16px;margin-bottom:14px}
+.order.cancelled{opacity:.6}
+.order header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-weight:700}
+.tag{font-size:12px;padding:2px 10px;border-radius:var(--r);background:#fff1e6;color:#c4500a}
+.tag.bad{background:#fde8e7;color:var(--red)}.tag.done{background:#e3f5ea;color:var(--ok)}
+.oItems{display:grid;gap:8px;margin:10px 0}
+.oItem{display:flex;align-items:center;gap:10px}
+.oItem .thumb{width:48px;height:48px;flex:none}
+.steps{display:flex;gap:4px;margin:14px 0 6px;list-style:none;padding:0}
+.steps li{flex:1;text-align:center;font-size:12px;color:#888;border-top:4px solid var(--line);padding-top:6px}
+.steps li.on{border-color:var(--brand);color:var(--ink);font-weight:600}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--r);transition:.3s;z-index:60;max-width:90vw}
+#toast.on{transform:translate(-50%,0)}
+
+/* ---------- TRANG ĐĂNG NHẬP ---------- */
+#auth{position:fixed;inset:0;background:#fff;z-index:40;overflow:auto;display:flex;flex-direction:column}
+.authTop{display:flex;justify-content:space-between;align-items:center;height:80px;padding:0 32px;border-bottom:1px solid var(--line);flex:none}
+.authLang{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.authBox{width:min(400px,100%);margin:0 auto;padding:36px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.authBox h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.mtabs{display:flex;border-bottom:1px solid var(--line)}
+.mtab{padding:8px 16px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.mtab.on{color:var(--ink);border-color:var(--brand)}
+.aIn{width:100%;height:48px;font-size:16px}
+.aIn:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,177,79,.18)}
+.phoneRow{display:flex;gap:8px}
+.cc{flex:none;width:72px;height:48px;display:grid;place-items:center;border:1px solid #c8ccd1;border-radius:var(--r);font-size:15px}
+.passRow{position:relative}
+.showPass{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:600;color:var(--brand-d)}
+.passRow .aIn{padding-right:60px}
+.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:14px}
+.remember input{width:18px;height:18px}
+#auth .msg{min-height:0}
+#auth .btn.block{height:48px;padding:0}
+.switch{font-size:14px;text-align:center;color:#4b5560}
+.authLinks{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:56px;font-size:13px}
+.authLinks a{color:#1769d1;margin-right:10px}
+.authLinks .blue{margin:0}
+
+/* ---------- FOOTER ---------- */
+.ft{margin-top:56px}
+.ftMain{background:var(--foot);padding:32px 0 56px}
+.ftTop{display:flex;justify-content:space-between;align-items:center;padding-bottom:24px;border-bottom:1px solid #dbe2e5;margin-bottom:28px}
+.ftLogo{font-size:28px;font-weight:800;letter-spacing:-1.2px}.ftLogo span{color:var(--brand)}
+.lang{border:0!important;background:none!important;font-size:12px;padding:4px!important}
+.ftCols{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.ftCols h3{font-size:16px;font-weight:600;color:#454d57;margin-bottom:22px}
+.ftCols li{margin-bottom:8px}
+.fl{font-size:14px;color:#4b5560;display:inline-block}
+.fl:hover{color:var(--ink);text-decoration:underline}
+.ftDark{background:var(--dark);color:#fff;padding:32px 0}
+.ftDarkIn{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.ftDark h4{font-size:16px;font-weight:600;margin-bottom:10px}
+.cities{display:flex;flex-wrap:wrap;margin-bottom:14px}
+.cities span{padding:0 12px;border-right:1px solid #7c8190;line-height:1.1}
+.cities span:first-child{padding-left:0}.cities span:last-child{border:0}
+.copy{color:#9aa0ad;font-size:14px;margin-bottom:18px}
+.legal{font-size:12px;font-weight:600}.legal a:hover{text-decoration:underline}
+.ftRight{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;gap:20px}
+.social{display:flex;gap:20px}
+.badges{display:flex;gap:16px}
+.badge{display:flex;flex-direction:column;background:#000;border:1px solid #8b8f9a;border-radius:var(--r);padding:6px 16px;line-height:1.15}
+.badge small{font-size:10px}.badge b{font-size:16px}
+
+/* ---------- RESPONSIVE ---------- */
+@media(min-width:1081px){.top{position:sticky;top:0}html{scroll-padding-top:96px}}
+@media(max-width:1080px){
+  .bar{flex-wrap:wrap;padding:10px 16px;gap:10px}
+  .logo{margin-right:auto}
+  .seg{order:5}.loc{order:6;margin-right:auto}.search{order:7;flex:1 1 100%}
+  .next{right:0}
+}
+@media(max-width:820px){
+  .hero::after{background:rgba(6,20,13,.55)}
+  .heroIn{padding-top:40px;padding-bottom:76px}
+  .codes{max-width:none}
+}
+@media(max-width:700px){
+  .seg{width:100%}.seg button{flex:1;padding:9px 12px}.loc{width:100%}
+  .logo{font-size:24px}.textBtn{padding:6px 4px;font-size:14px}.loginBtn{height:40px;padding:0 14px;max-width:130px;font-size:14px}
+  .cartBtn{height:40px;min-width:58px;padding:0 10px}.bar{gap:8px}
+  .two{grid-template-columns:1fr}.steps li{font-size:10px}
+  .ftCols{grid-template-columns:1fr 1fr}.ftRight{align-items:flex-start}
+  .qr{flex-direction:column;align-items:flex-start}.qr img{width:100%;max-width:240px;height:auto;aspect-ratio:1}
+  h2,.secHead{margin-top:36px}
+  .authTop{padding:0 16px}.authLinks{margin-top:36px}
+}
+/* ---------- ĐẶT XE + GOOGLE MAPS ---------- */
+.rideLayout{display:grid;gap:20px;align-items:start}
+#ride.withMap .rideLayout{grid-template-columns:minmax(340px,440px) minmax(0,1fr)}
+.mapCol{position:sticky;top:84px;height:min(640px,calc(100vh - 110px));min-height:380px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--line);background:var(--ph)}
+#map{position:absolute;inset:0}
+.mapMsg{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:var(--ph);color:var(--muted);font-weight:600;padding:20px;text-align:center}
+#rideMapUI{display:grid;gap:12px}
+.route{display:grid;grid-template-columns:16px minmax(0,1fr) 38px;gap:10px;align-items:center}
+.routeDots{display:flex;flex-direction:column;align-items:center;gap:4px}
+.routeDots i{width:12px;height:12px;border-radius:50%}
+.dotA{background:var(--brand)}.dotB{background:var(--red);border-radius:2px!important}
+.routeDots .dash{height:26px;border-left:2px dotted #b8bec5}
+.routeInputs{display:grid;gap:10px}
+.acBox{position:relative}
+.acBox input{width:100%;font-weight:500;padding-right:44px}
+.gps{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;color:var(--brand);display:grid;place-items:center}
+.gps:hover{background:var(--mint)}
+.swap{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:#4b5560;transition:.15s}
+.swap:hover{background:var(--soft);border-color:#b8bec5}
+.acList{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;background:#fff;border:1px solid var(--line);border-radius:var(--r2);box-shadow:0 12px 32px rgba(0,0,0,.16);max-height:300px;overflow:auto}
+.acItem{display:grid;gap:1px;width:100%;padding:10px 14px;text-align:left;border-bottom:1px solid var(--soft)}
+.acList li:last-child .acItem{border-bottom:0}
+.acItem:hover,.acItem:focus-visible{background:var(--soft)}
+.acItem small{color:var(--muted)}
+.acEmpty{padding:14px;color:var(--muted);font-size:14px}
+.pin{position:relative;margin-bottom:8px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:grab}
+.pin::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);border:5px solid transparent}
+.pin.from{background:var(--brand)}.pin.from::after{border-top-color:var(--brand)}
+.pin.to{background:var(--red)}.pin.to::after{border-top-color:var(--red)}
+@media(max-width:900px){
+  #ride.withMap .rideLayout{grid-template-columns:1fr}
+  .mapCol{position:relative;top:0;height:320px;min-height:0;order:-1}
+}
+
+/* ---------- HỘP XÁC NHẬN ---------- */
+#confirmWrap{position:fixed;inset:0;z-index:60;background:rgba(15,20,25,.55);backdrop-filter:blur(2px);display:grid;place-items:center;padding:16px;animation:fade .15s}
+.cfm{background:#fff;width:min(400px,100%);border-radius:14px;padding:28px 24px 20px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);animation:pop .18s}
+.cfmIcon{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--mint);color:var(--brand)}
+.cfmIcon.danger{background:#fdecea;color:var(--red)}
+.cfm h3{font-size:20px;margin-bottom:6px;letter-spacing:-.2px}
+.cfm p{color:var(--muted);font-size:14.5px}
+.cfmActs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.cfmActs .btn{padding:12px}
+.btn.danger{background:var(--red)}.btn.danger:hover{background:#b3261e}
+@keyframes fade{from{opacity:0}}
+
+@media(max-width:700px){
+  .quick{margin-top:-28px;grid-template-columns:repeat(4,1fr);gap:8px}
+  .qk,.cat{font-size:13px;padding:10px 4px}
+  .qIcon{width:52px;height:52px}
+  .cat{flex-basis:112px}
+  .heroSound,.heroDots{bottom:44px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* ---------- CĂN CHỈNH BỐ CỤC ---------- */
+.bar{max-width:1232px;margin-left:auto;margin-right:auto}            /* header cùng bề rộng với nội dung */
+.heroIn{width:100%}                                                   /* chữ hero căn đúng lề trái nội dung */
+.search input:-webkit-autofill{-webkit-box-shadow:0 0 0 100px #fff inset;-webkit-text-fill-color:var(--ink)}
+@media(min-width:701px){
+  .bar{padding-left:16px;padding-right:16px}
+  .cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;overflow:visible;padding:4px 0 8px}   /* danh mục lấp đầy hàng, thẻ bằng nhau */
+  .cats .cat{flex:none;width:auto}
+  .cats~.next{display:none}
+}
+.sname{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em;font-size:15px}
+.smeta{display:flex;flex-direction:column;gap:1px;white-space:normal}
+.ph{position:absolute;inset:0;display:grid;place-items:center;font-size:44px;background:var(--mint)}   /* ô thay thế khi chưa có ảnh */
+/* ==========================================================================
+   [AI] NÂNG CẤP TRANG CHỦ v2 – chữ, khoảng cách, nút bấm.
+   Khối này nằm CUỐI file để ghi đè an toàn; xóa cả khối là về lại bản cũ.
+   Không đụng tới ảnh, video hay đường dẫn media.
+   ========================================================================== */
+:root{
+  --head:#0b1117;            /* màu tiêu đề: đậm hơn --ink để tăng tương phản */
+  --cta:#007a3b;             /* nút chính: chữ trắng đạt tương phản ~5.4:1 */
+  --cta-d:#006330;
+  --btn-r:12px;              /* độ bo nút */
+  --sec-gap:96px;            /* khoảng cách giữa các section lớn */
+}
+
+/* ---------- 1) CHỮ ---------- */
+.hero h1{
+  letter-spacing:-.02em; line-height:1.15; font-weight:800;
+  text-shadow:0 2px 24px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.3);
+}
+.hero::after{background:linear-gradient(90deg,rgba(6,20,13,.86) 0%,rgba(6,20,13,.52) 55%,rgba(6,20,13,.22) 100%)}  /* lớp phủ đậm hơn một chút cho chữ dễ đọc */
+h2{color:var(--head); font-size:clamp(24px,2.4vw,30px); font-weight:800; letter-spacing:-.02em; line-height:1.25}
+.box h2{font-size:22px; letter-spacing:-.01em}
+.sub{color:#4b5563}
+.more{color:var(--cta); font-weight:700}
+.more:hover{text-decoration:underline; text-underline-offset:4px}
+
+/* ---------- 2) KHOẢNG CÁCH ---------- */
+.secHead{margin:var(--sec-gap) 0 24px}
+.secHead + .sub{margin-top:-12px; margin-bottom:20px}
+main > section > .wrap > .secHead:first-of-type{margin-top:72px}   /* "Danh mục món ăn" ngay dưới hàng ô nhanh */
+section.wrap > h2{margin-top:56px; margin-bottom:20px}             /* Đặt xe / Đơn hàng */
+.rail{gap:24px; padding:6px 2px 12px}
+.grid,.storeGrid{gap:24px}
+.loadMore{margin-top:48px}
+.faq{margin-bottom:var(--sec-gap)}
+.wrap{padding-left:24px; padding-right:24px}
+
+/* ---------- 3) NÚT BẤM (CTA) ---------- */
+.btn,.loginBtn,.cartBtn,.loadMore,.btn.ghost{border-radius:var(--btn-r)}
+.seg{border-radius:calc(var(--btn-r) + 2px)}
+.seg button{border-radius:var(--btn-r)}
+.next,.qty button,.heart{border-radius:var(--btn-r)}
+
+/* Nút chính: đậm, rõ, có bóng; hover nổi lên, bấm thì lún xuống */
+.btn:not(.ghost):not(.danger):not(:disabled),.loginBtn{
+  background:var(--cta); color:#fff; font-weight:700; letter-spacing:.005em;
+  box-shadow:0 1px 2px rgba(0,60,30,.25), 0 6px 14px -6px rgba(0,122,59,.55);
+  transition:background .18s, transform .18s, box-shadow .18s;
+}
+.btn:not(.ghost):not(.danger):not(:disabled):hover,.loginBtn:hover{
+  background:var(--cta-d); transform:translateY(-2px);
+  box-shadow:0 2px 4px rgba(0,60,30,.3), 0 12px 22px -8px rgba(0,122,59,.65);
+}
+.btn:not(:disabled):active,.loginBtn:active{transform:translateY(0) scale(.98); box-shadow:0 1px 2px rgba(0,60,30,.3)}
+.btn:disabled{box-shadow:none}
+
+/* Nút phụ: viền rõ hơn, hover đổi sang tông thương hiệu */
+.btn.ghost{border:1.5px solid #6b7280; color:var(--head); font-weight:700; transition:background .18s,border-color .18s,transform .18s}
+.btn.ghost:hover{background:var(--mint); border-color:var(--cta); color:var(--cta-d); transform:translateY(-1px)}
+
+/* Nút giỏ hàng và "Xem thêm": tông mint đậm chữ hơn, hover rõ */
+.cartBtn,.loadMore{color:#0f3d2e; font-weight:700; transition:background .18s, transform .18s}
+.cartBtn:hover,.loadMore:hover{background:#cfeee1; transform:translateY(-1px)}
+
+/* Trạng thái bàn phím: vòng focus 2 lớp, nhìn rõ trên cả nền sáng lẫn nền tối */
+.btn:focus-visible,.loginBtn:focus-visible,.cartBtn:focus-visible,.loadMore:focus-visible{
+  outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--cta);
+}
+
+@media (max-width:760px){
+  :root{--sec-gap:64px}
+  .wrap{padding-left:16px; padding-right:16px}
+  .secHead{margin-top:var(--sec-gap)}
+  section.wrap > h2{margin-top:40px}
+  .rail{gap:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .btn,.loginBtn,.cartBtn,.loadMore{transition:none}
+  .btn:hover,.loginBtn:hover,.cartBtn:hover,.loadMore:hover{transform:none}
+}
+
+/* ==========================================================================
+   [AI] SỬA GIAO DIỆN ĐIỆN THOẠI v3 (≤700px). Chỉ chỉnh cỡ chữ, bố cục, khoảng cách;
+   không đụng tới ảnh, video hay đường dẫn media. Xóa cả khối này để quay về bản trước.
+   ========================================================================== */
+.fl{padding:0}                                   /* nút <button> trong chân trang bị lệch lề so với link <a> */
+@media(max-width:700px){
+  :root{--sec-gap:56px}
+
+  /* Header gọn: logo – Đơn hàng – giỏ – Đăng nhập nằm cùng một hàng */
+  .bar{padding:10px 16px 12px;gap:8px 6px}
+  .logo{font-size:22px;letter-spacing:-.04em}
+  .textBtn{padding:6px 2px;font-size:13px}
+  .cartBtn{height:38px;min-width:48px;padding:0 8px;gap:6px}
+  .loginBtn{height:38px;padding:0 12px;font-size:13px;max-width:none;min-width:0}
+  .seg button{padding:8px 10px}
+  .search{height:42px}
+  .loc{padding:2px 0}
+
+  /* Hero: bớt khoảng trống, chữ không tràn */
+  .hero{--hh:clamp(360px,54vh,440px)}
+  .heroIn{padding-top:28px;padding-bottom:84px}
+  .hero h1{font-size:clamp(28px,8.6vw,36px);letter-spacing:-.02em;line-height:1.15;margin:4px 0 12px}
+  .codes{font-size:14px;line-height:1.6}
+
+  /* Hàng ô nhanh: 1 hàng cuộn ngang thay cho lưới 4+3 bị lẻ */
+  .quick{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;
+    margin:-30px -16px 0;padding:6px 16px 14px}
+  .quick::-webkit-scrollbar{display:none}
+  .qk{flex:0 0 78px;scroll-snap-align:start;font-size:12.5px;padding:10px 4px}
+  .qIcon{width:48px;height:48px}
+
+  /* Tiêu đề & khoảng cách */
+  h2{font-size:22px}
+  .secHead{margin:var(--sec-gap) 0 16px}
+  .secHead + .sub{margin-top:-6px;margin-bottom:16px;font-size:14px}
+  main > section > .wrap > .secHead:first-of-type{margin-top:36px}
+  section.wrap > h2{margin-top:32px}
+
+  /* Hàng cuộn ngang: tràn sát mép màn hình, bỏ nút mũi tên (đã vuốt được) */
+  .rail{margin:0 -16px;padding:4px 16px 12px;gap:14px;scroll-snap-type:x proximity}
+  .rail > *{scroll-snap-align:start}
+  .next{display:none}
+  .rail .card{flex-basis:220px}
+  .store{flex-basis:150px}
+
+  /* Bộ lọc: lưới 2 cột đều nhau */
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .filters select{width:100%;min-width:0;padding:10px 8px}
+  .filters .chk{grid-column:1/-1}
+
+  /* Lưới món & quán: 2 cột thay vì 1 cột khổng lồ */
+  .grid{grid-template-columns:1fr 1fr;gap:12px}
+  .storeGrid{grid-template-columns:1fr 1fr;gap:20px 12px}
+  .grid .pic{height:112px}
+  .grid .info{padding:10px;gap:3px}
+  .grid .info b{font-size:14px;line-height:1.3}
+  .grid .info small{font-size:12px;line-height:1.35}
+  .grid .info small:last-of-type{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .grid .price{font-size:16px;margin-top:2px}
+  .grid .btn.sm{padding:8px 6px;font-size:13px}
+  .promo{font-size:12px;padding:2px 8px}
+  .heart{width:30px;height:30px}
+  .loadMore{margin-top:36px;width:100%;max-width:340px}
+
+  /* FAQ */
+  .faq{margin-bottom:var(--sec-gap)}
+
+  /* Chân trang */
+  .ftCols{gap:20px 16px}
+  .ftCols h3{margin-bottom:12px;font-size:15px}
+  .ftCols li{margin-bottom:0}
+  .fl{padding:7px 0;font-size:14px}
+  .cities{gap:4px 0}
+  .cities span{border:0;padding:0 14px 0 0}
+  .ftDarkIn{gap:20px}
+  .badges{gap:12px;flex-wrap:wrap}
+}
+@media(max-width:360px){
+  .logo{font-size:20px}
+  .textBtn{font-size:12px}
+  .loginBtn{padding:0 9px;font-size:12px}
+  .cartBtn{min-width:44px;padding:0 6px}
+  .grid .btn.sm{font-size:12px}
+}
+@media(max-width:700px){.quick,.rail{scroll-padding-inline:16px}}
+.store{padding:0}                                  /* <button> mặc định có lề 6px làm thẻ quán lệch so với thẻ khác */
+@media(max-width:700px){.filters select:nth-of-type(3){grid-column:1/-1}}
+
+.chip{font-size:13px;padding:3px 8px;border-radius:4px}
+.smeta,.info small{color:#566070}
+
+/* ==========================================================================
+   [AI] v4: carousel hero · trang tài khoản · COD · trang đơn hàng mới
+   ========================================================================== */
+
+/* ---------- HERO CAROUSEL ---------- */
+.hslide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;background:linear-gradient(135deg,#06140d 0%,#0a4d2e 60%,#00a14a 100%)}
+.hslide.tone1{background:linear-gradient(135deg,#0a1f33 0%,#0b5d63 60%,#17b5a0 100%)}
+.hslide.tone2{background:linear-gradient(135deg,#2b1408 0%,#8a3b0f 60%,#f08a24 100%)}
+.hslide.tone3{background:linear-gradient(135deg,#1a1033 0%,#4a2a86 60%,#9b6bf0 100%)}
+.hslide.on{opacity:1}
+.hslide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.heroIn > *{transition:opacity .25s ease,transform .25s ease}
+.heroIn.swap > *{opacity:0;transform:translateY(10px)}
+.heroCta{margin-top:22px}
+.hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled){background:#fff;color:var(--cta-d);height:50px;padding:0 30px;font-size:16px;box-shadow:0 10px 28px -10px rgba(0,0,0,.55)}
+.hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled):hover{background:#f0fff6;color:var(--cta-d)}
+.heroNav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;font-size:28px;line-height:1;display:grid;place-items:center;backdrop-filter:blur(6px);transition:background .18s,transform .18s;z-index:2}
+.heroNav:hover{background:rgba(0,0,0,.65);transform:translateY(-50%) scale(1.06)}
+.heroNav.prev{left:18px}.heroNav.nxt{right:18px}
+.heroNav[hidden]{display:none}
+.heroDots{z-index:2}
+
+/* ---------- NÚT ĐĂNG NHẬP → TÀI KHOẢN ---------- */
+.loginBtn{display:inline-flex;align-items:center;gap:8px}
+.avatar{display:grid;place-items:center;flex:none;border-radius:50%;background:linear-gradient(135deg,#0a8f4a,#00c060);color:#fff;font-weight:800}
+.avatar.sm{width:26px;height:26px;font-size:13px;background:#fff;color:var(--cta)}
+.uname{overflow:hidden;text-overflow:ellipsis;min-width:0}
+
+/* ---------- TRANG TÀI KHOẢN ---------- */
+#account{padding-bottom:var(--sec-gap)}
+.acctGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.acctCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 8px 30px -18px rgba(10,30,20,.35)}
+.acctCard h3{margin:0 0 16px;font-size:18px;letter-spacing:-.01em}
+.acMe{grid-column:1/-1;display:flex;gap:24px;align-items:center;flex-wrap:wrap;background:linear-gradient(135deg,#f2fbf6,#fff)}
+.acMe .avatar{width:72px;height:72px;font-size:30px;box-shadow:0 10px 24px -10px rgba(0,122,59,.6)}
+.acWho{flex:1 1 200px;min-width:0}
+.acWho h3{margin:0 0 4px;font-size:22px;overflow:hidden;text-overflow:ellipsis}
+.acWho p{margin:0;color:var(--muted)}
+.acStats{display:flex;gap:12px;flex-wrap:wrap}
+.acStats div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:104px;text-align:center}
+.acStats b{display:block;font-size:18px}.acStats span{font-size:12px;color:var(--muted)}
+.acMe .acts{display:flex;gap:10px;flex-wrap:wrap;width:100%;margin:0}
+.acField{display:grid;gap:6px;margin-bottom:14px;font-weight:600;font-size:14px;color:var(--head)}
+.acField input{height:46px;padding:0 14px;border:1px solid #c9d1d8;border-radius:12px;font:inherit;font-weight:500;background:#fff}
+.acField input:focus{outline:none;border-color:var(--cta);box-shadow:0 0 0 3px rgba(0,122,59,.18)}
+.acField input:disabled{background:#f3f5f7;color:#6b7280}
+#acPwCard.off{opacity:.7}
+
+/* ---------- THANH TOÁN COD ---------- */
+.codBox{display:flex;gap:12px;align-items:center;margin:14px 0;padding:14px;border:1.5px solid var(--cta);background:#f2fbf6;border-radius:14px}
+.codIcon{font-size:26px;line-height:1}
+.codBox b{display:block;color:var(--head)}.codBox small{color:#44505c;line-height:1.45}
+
+/* ---------- ĐẶT XE: gợi ý ---------- */
+.rideTip{margin:0 0 12px;padding:10px 12px;background:#f2fbf6;border-radius:10px;font-size:13px;line-height:1.5;color:#2f4a3c}
+
+/* ---------- TRANG ĐƠN HÀNG ---------- */
+.ordStats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 20px}
+.ordStats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 6px 20px -16px rgba(10,30,20,.5)}
+.ordStats b{display:block;font-size:22px;letter-spacing:-.02em;color:var(--head)}
+.ordStats span{font-size:13px;color:var(--muted)}
+#orderList{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:20px;align-items:start}
+.ordCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 12px 34px -22px rgba(10,30,20,.55);display:flex;flex-direction:column;gap:14px}
+.ordCard.cancelled{opacity:.72}
+.ordCard header{display:flex;align-items:center;gap:12px;font-weight:400}
+.oIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:#e7f7ee;flex:none}
+.oIcon.ride{background:#e8f0ff}
+.oHead{flex:1;min-width:0}.oHead b{display:block;font-size:16px;color:var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oHead small{color:var(--muted)}
+.tag{white-space:nowrap}
+.tag.live{background:#fff1e6;color:#b04a06}
+.track{display:flex;list-style:none;margin:2px 0 0;padding:0}
+.track li{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:11.5px;color:#7b8794;text-align:center;line-height:1.25}
+.track li::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:#e2e8ee;z-index:0}
+.track li:first-child::before{display:none}
+.track li i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:#e2e8ee;color:#6b7785}
+.track li.done i{background:var(--cta);color:#fff}.track li.done::before,.track li.now::before{background:var(--cta)}
+.track li.now i{background:#fff;color:var(--cta);box-shadow:0 0 0 3px var(--cta)}
+.track li.now,.track li.done{color:var(--head);font-weight:600}
+.oCancel{margin:0;padding:10px 12px;background:#fde8e7;color:var(--red);border-radius:10px;font-size:14px}
+.oStore{margin:0;font-size:14px;color:#44505c}
+.oLines{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.oLines li{display:flex;align-items:center;gap:12px}
+.oLines .thumb{width:52px;height:52px;border-radius:10px;flex:none}
+.oiName{flex:1;min-width:0}.oiName b{display:block;font-size:14.5px}.oiName small{color:var(--muted)}
+.oRoute{display:grid;gap:10px;position:relative}
+.oRoute div{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.oRoute i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;color:#fff;flex:none}
+.oRoute .rA{background:var(--cta)}.oRoute .rB{background:#d93025}
+.oInfo{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0;padding:12px 14px;background:#f6f8fa;border-radius:12px}
+.oInfo div{min-width:0}.oInfo dt{font-size:12px;color:var(--muted)}.oInfo dd{margin:2px 0 0;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.oSum{display:grid;gap:6px;font-size:14px;border-top:1px dashed #cfd6dd;padding-top:12px}
+.oSum div{display:flex;justify-content:space-between;color:#44505c}
+.oSum .disc{color:var(--cta)}
+.oSum .tot{font-size:17px;color:var(--head);padding-top:6px}.oSum .tot b{font-size:20px}
+.ordCard .acts{display:flex;gap:10px;flex-wrap:wrap;margin:0}
+.ordEmpty{grid-column:1/-1;text-align:center;padding:48px 16px;border:1.5px dashed #cfd6dd;border-radius:18px}
+.ordEmpty span{font-size:44px}.ordEmpty p{margin:8px 0 16px;color:#44505c}
+
+@media(max-width:900px){.acctGrid{grid-template-columns:1fr}.ordStats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+  .heroNav{display:none}
+  .hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled){height:46px;padding:0 24px;font-size:15px}
+  .heroCta{margin-top:16px}
+  .acctCard{padding:18px}.acMe{gap:16px}.acMe .avatar{width:60px;height:60px;font-size:26px}
+  .acStats{width:100%}.acStats div{flex:1;min-width:0;padding:8px 6px}
+  .ordStats{gap:10px}.ordStats div{padding:12px}
+  #orderList{grid-template-columns:1fr;gap:16px}
+  .ordCard{padding:16px;border-radius:16px}
+  .track li{font-size:10px}.track li i{width:24px;height:24px;font-size:11px}.track li::before{top:11px}
+  .oInfo{grid-template-columns:1fr}
+  .filters select{min-width:0}
+}
+.acctCard .msg{margin:0 0 12px}.acctCard .msg:empty{display:none}
+.acctCard .note{margin:0 0 14px}
+@media(max-width:700px){#orders .filters .btn.ghost{grid-column:1/-1}}
+
+/* ---------- OpenStreetMap (Leaflet) ---------- */
+.mapCol{isolation:isolate}#map{z-index:0}
+.osmPin{background:none;border:0}
+.osmPin .pin{margin:0}
+.leaflet-container{font-family:inherit}
+
+/* ==========================================================================
+   [AI] v5: sửa carousel · hàng cuộn ngang trên điện thoại · thanh lọc gọn đẹp
+   ========================================================================== */
+
+/* Carousel: ảnh cũ giữ nguyên cho tới khi ảnh mới phủ kín; chữ chỉ hiện khi ảnh đầu đã sẵn sàng */
+.hslide{z-index:0}
+.hslide.prev{opacity:1;z-index:1;transition:none}
+.hslide.on{opacity:1;z-index:2}
+.heroIn{transition:opacity .5s ease}
+.hero.loading .heroIn,.hero.loading .heroDots,.hero.loading .heroNav{opacity:0}
+
+/* Hàng cuộn ngang: thấy một phần thẻ kế tiếp để biết còn nữa, kéo chuột được */
+.railWrap{min-width:0}
+.rail,.quick{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.rail.drag,.quick.drag{scroll-behavior:auto;scroll-snap-type:none;cursor:grabbing;user-select:none}
+@media(max-width:700px){
+  .rail .card{flex-basis:200px}
+  .rail{scroll-padding-inline:16px}
+}
+
+/* Thanh lọc: ô chọn viền mảnh, mũi tên tự vẽ, "món yêu thích" là chip bật/tắt */
+.filters select{
+  appearance:none;-webkit-appearance:none;height:42px;padding:0 38px 0 14px;font-size:14px;font-weight:500;color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23566070' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E") no-repeat right 14px center;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.filters select:hover{border-color:#b8bec6}
+.filters select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,122,59,.12);outline:0}
+.filters .chk{position:relative;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;font-size:14px;font-weight:500;
+  border:1px solid var(--line);border-radius:var(--r);background:#fff;cursor:pointer;user-select:none;transition:.15s}
+.filters .chk:hover{border-color:#b8bec6}
+.filters .chk input{position:absolute;opacity:0;pointer-events:none}
+.filters .chk::before{content:"\2661";font-size:16px;line-height:1;color:#8a929c}
+.filters .chk:has(input:checked){border-color:var(--brand);background:var(--mint);color:var(--brand-d)}
+.filters .chk:has(input:checked)::before{content:"\2665";color:var(--red)}
+.filters .chk:has(input:focus-visible){outline:2px solid var(--brand);outline-offset:2px}
+@media(max-width:700px){.filters select{width:100%;padding:0 34px 0 12px;background-position:right 12px center}}
+
+
+/* ==========================================================================
+   [AI] v6: xác minh email · giảm bo tròn toàn trang
+   ========================================================================== */
+.vStep{border:1px solid var(--line);border-radius:var(--r2);padding:14px;display:flex;flex-direction:column;gap:10px}
+.vHead{display:flex;justify-content:space-between;align-items:center}
+.vStep p{font-size:14px;color:var(--muted)}
+.vBadge{font-size:12px;font-weight:600;padding:3px 8px;border-radius:var(--r);background:#fdeee3;color:var(--chip-tx);white-space:nowrap}
+.vBadge.ok{background:var(--mint);color:var(--brand-d)}
+.vActs{display:flex;gap:8px;flex-wrap:wrap}
+.vActs .btn{flex:1;min-width:130px}
+#authForm{display:flex;flex-direction:column;gap:14px}
+#authVerify{display:flex;flex-direction:column;gap:14px}
+#authVerify .btn:disabled,.vActs .btn:disabled{opacity:.55;cursor:not-allowed}
+#authVerify>.link2{align-self:center}
+.acWho .vBadge{display:inline-block;margin-top:6px}
+.vBtn{margin-top:8px}
+
+/* Giảm bo góc: nút, thẻ, hộp… dùng góc nhỏ (4–8px); vòng tròn chỉ giữ cho chấm trạng thái và bước theo dõi đơn */
+:root{--btn-r:6px}
+.cfm{border-radius:8px}
+.acctCard,.ordCard,.ordEmpty{border-radius:8px}
+.acStats div,.ordStats div{border-radius:6px}
+.acField input,.codBox,.rideTip,.oCancel,.oInfo,.oIcon,.oLines .thumb{border-radius:6px}
+@media(max-width:760px){.ordCard{border-radius:8px}}
+.heroNav,.heroSound,.gps,.swap,.avatar,.cfmIcon{border-radius:var(--r2)}
+.heroDots button{border-radius:2px;width:18px;height:4px}
+.heroDots button.on{width:30px}
+
+
+/* ==========================================================================
+   [AI] v7: đăng nhập / tài khoản – bo góc vừa phải, phẳng, bớt "mẫu có sẵn"
+   Quy ước: ô nhập & nút 8px · thẻ 10px · hộp thoại 12px · không bóng đổ, không gradient, không viền màu một bên
+   ========================================================================== */
+#auth .aIn,#auth .cc,.acField input,.v{border-radius:8px}
+#auth .aIn{border:1px solid #c9ced4;background:#fff}
+#auth .aIn:focus,.acField input:focus{border-color:var(--brand);box-shadow:none;outline:1px solid var(--brand);outline-offset:0}
+#auth .btn,.acctCard .btn,.acMe .btn{border-radius:8px;box-shadow:none}
+#auth .btn:hover,.acctCard .btn:hover{transform:none;box-shadow:none}
+.acctCard{border-radius:10px;box-shadow:none;border-color:#dde1e5}
+.acMe{background:#fff}
+.avatar{background:var(--brand-d);border-radius:10px}
+.acMe .avatar{border-radius:12px;box-shadow:none}
+.avatar.sm{background:#fff;border-radius:6px}
+.acStats div{border-radius:8px;background:#f7f8f9;border-color:#e3e6e9}
+.vStep{border-radius:10px;border-color:#dde1e5}
+.vBadge{border-radius:6px}
+#auth .note,.acctCard .note{background:#f4f6f7;border-left:0;border-radius:8px;color:#454e58;padding:10px 12px}
+.cfm{border-radius:12px}
+.codBox,.rideTip,.oInfo,.oCancel{border-radius:8px}

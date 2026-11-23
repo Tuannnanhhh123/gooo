@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoNow – Đặt đồ ăn & Đặt xe</title>
+  <meta name="description" content="GoNow: đặt món ngon giao tận cửa và đặt xe nhanh. Dùng mã FOOD10 giảm 10%, FREESHIP miễn phí giao từ 100.000đ. (Dự án học tập, dữ liệu mô phỏng.)">
+  <meta name="theme-color" content="#007a3b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GoNow – Món ngon đến tận cửa nhà bạn">
+  <meta property="og:description" content="Đặt đồ ăn và đặt xe trong vài chạm. Mã FOOD10 giảm 10%, FREESHIP miễn phí giao từ 100.000đ.">
+  <meta property="og:locale" content="vi_VN">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23007a3b'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='34' font-weight='800' fill='white' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="images/hero/1.jpg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- [AI] Bố cục: header → 3 section (Đồ ăn / Đặt xe / Đơn hàng) → footer. Lớp phủ: #auth (trang đăng nhập), #drawerWrap (giỏ hàng), #modal (cửa hàng, khu vực, xác nhận chuyến xe).
+     Mọi khung ảnh đều để trống (nền xám). Xem images/README.txt để biết đặt ảnh ở đâu. -->
+<header class="top">
+  <div class="bar">
+    <button class="logo" data-act="home" aria-label="GoNow – Trang chủ">Go<span>Now</span></button>
+
+    <nav class="seg" aria-label="Dịch vụ">
+      <button data-tab="food" class="active">Đồ ăn</button>
+      <button data-tab="ride">Đặt xe</button>
+    </nav>
+
+    <button class="loc" id="locBtn" data-act="location" aria-label="Chọn khu vực">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#d93025" aria-hidden="true"><path d="M12 2a7 7 0 00-7 7c0 5.2 7 13 7 13s7-7.800 7-13a7 7 0 00-7-7zm0 9.500A2.500 2.500 0 1112 6.500a2.500 2.500 0 010 5z"/></svg>
+      <span id="locText">Quận 1, TP.HCM</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+    </button>
+
+    <div class="search">
+      <button data-act="search" aria-label="Tìm kiếm">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      </button>
+      <input id="q" type="search" name="gonow-q" placeholder="Bạn thèm món gì?" autocomplete="off" aria-label="Tìm món ăn">
+    </div>
+
+    <button class="textBtn" data-tab="orders">Đơn hàng</button>
+    <button class="cartBtn" data-act="openCart" aria-label="Giỏ hàng">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8h12l1 12H5L6 8zM9 8a3 3 0 016 0"/></svg>
+      <b id="badge">0</b>
+    </button>
+    <button class="loginBtn" id="loginBtn" data-act="login">Đăng nhập</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= TRANG CHỦ: ĐỒ ĂN ================= -->
+  <section id="food">
+    <!-- Hero: video nền toàn chiều rộng (đặt video trong js/config.js → INTRO_VIDEO) -->
+    <div class="hero loading" id="hero" role="region" aria-roledescription="carousel" aria-label="Ưu đãi nổi bật">
+      <div class="heroMedia" id="introVideo"></div>
+      <div class="wrap heroIn">
+        <h1 id="heroTitle"></h1>
+        <p class="codes" id="heroText"></p>
+        <div class="heroCta" id="heroCta"></div>
+      </div>
+      <button class="heroNav prev" data-act="heroPrev" aria-label="Slide trước" hidden>‹</button>
+      <button class="heroNav nxt" data-act="heroNext" aria-label="Slide kế tiếp" hidden>›</button>
+      <div class="heroDots" id="heroDots" hidden></div>
+    </div>
+
+    <div class="wrap">
+      <div id="quick" class="quick"></div>
+
+      <div class="secHead"><h2>Hôm nay ăn gì?</h2></div>
+      <div class="railWrap">
+        <div id="cats" class="rail cats"></div>
+        <button class="next" data-act="slide" data-id="cats" aria-label="Xem thêm danh mục">›</button>
+      </div>
+
+      
+
+      <div class="secHead"><h2 id="promosHead">Ưu đãi hôm nay</h2></div>
+      <p class="sub">Món điểm cao nhất. Nhập <b>FOOD10</b> hoặc <b>FREESHIP</b> khi thanh toán.</p>
+      <div class="railWrap">
+        <div id="promos" class="rail"></div>
+        <button class="next" data-act="slide" data-id="promos" aria-label="Xem thêm món">›</button>
+      </div>
+
+      <div class="secHead"><h2 id="foodList">Toàn bộ thực đơn</h2></div>
+      <div class="filters">
+        <select id="cat" aria-label="Danh mục"><option value="all">Mọi danh mục</option></select>
+        <select id="price" aria-label="Mức giá"><option value="0">Mọi mức giá</option><option value="50000">Dưới 50.000đ</option><option value="100000">Dưới 100.000đ</option></select>
+        <select id="sort" aria-label="Sắp xếp"><option value="">Gợi ý cho bạn</option><option value="asc">Giá thấp → cao</option><option value="desc">Giá cao → thấp</option></select>
+        <label class="chk"><input type="checkbox" id="onlyFav"> Chỉ món yêu thích</label>
+      </div>
+      <div id="foodGrid" class="grid"></div>
+
+      
+
+      <div class="secHead"><h2 id="faq">Câu hỏi thường gặp</h2></div>
+      <div class="faq">
+        <details><summary>GoNow là gì?</summary><p>Dự án học tập mô phỏng app giao đồ ăn và đặt xe. Mọi thứ chạy ngay trên trình duyệt của bạn, không có đơn thật.</p></details>
+        <details><summary>GoNow hoạt động ở đâu?</summary><p>6 khu vực mô phỏng ở TP.HCM: Quận 1, 3, 7, Bình Thạnh, Tân Bình, Thủ Đức. Chọn khu vực ở thanh trên cùng để xem quán gần bạn.</p></details>
+        <details><summary>Giờ hoạt động của GoNow là gì?</summary><p>Bản demo luôn mở, vì chưa có nhà hàng hay tài xế thật.</p></details>
+        <details><summary>Làm sao để đặt món trên GoNow?</summary><p>Chọn món → Thêm vào giỏ → nhập mã (nếu có) → Đặt hàng → trả tiền khi nhận hàng (COD). Theo dõi tại mục “Đơn hàng”.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ĐẶT XE ================= -->
+  <section id="ride" class="wrap" hidden>
+    <h2>Đặt xe</h2>
+    <p class="sub">Nhập <b>RIDE15</b> giảm 15% chuyến xe.</p>
+    <div class="rideLayout">
+      <div class="panel ridePanel">
+        <!-- Chế độ Google Maps -->
+        <div id="rideMapUI" hidden>
+          <p class="rideTip">📍 Trình duyệt sẽ hỏi quyền vị trí để lấy điểm đón của bạn. Gõ địa chỉ hoặc chạm vào bản đồ để chọn nơi đến — giá tính theo số km đi đường thực tế.</p>
+          <div class="route">
+            <div class="routeDots" aria-hidden="true"><i class="dotA"></i><span class="dash"></span><i class="dotB"></i></div>
+            <div class="routeInputs">
+              <div class="acBox">
+                <input id="pFrom" type="text" placeholder="Điểm đón" autocomplete="off" aria-label="Điểm đón">
+                <button class="gps" type="button" data-act="useGps" aria-label="Dùng vị trí hiện tại" title="Dùng vị trí hiện tại">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.500"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.500"/></svg>
+                </button>
+                <ul class="acList" id="acFrom" hidden></ul>
+              </div>
+              <div class="acBox">
+                <input id="pTo" type="text" placeholder="Bạn muốn đến đâu?" autocomplete="off" aria-label="Điểm đến">
+                <ul class="acList" id="acTo" hidden></ul>
+              </div>
+            </div>
+            <button class="swap" type="button" data-act="swapRoute" aria-label="Đổi chiều" title="Đổi điểm đón và điểm đến">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v16M8 4L4 8M8 4l4 4M16 20V4M16 20l-4-4M16 20l4-4"/></svg>
+            </button>
+          </div>
+          <p class="note">Gõ địa chỉ để chọn gợi ý, hoặc bấm lên bản đồ. Kéo ghim A/B để chỉnh vị trí.</p>
+        </div>
+        <!-- Chế độ chọn quận (khi chưa có Google Maps key) -->
+        <div id="rideLegacy" hidden>
+          <div class="two">
+            <label>Điểm đón<select id="from"></select></label>
+            <label>Điểm đến<select id="to"></select></label>
+          </div>
+          <p class="note">Khoảng cách được mô phỏng từ tọa độ giả định của các quận, không đo từ bản đồ thật. Giá chỉ là ước tính.</p>
+        </div>
+        <div id="vehicles"></div>
+        <button class="btn" id="bookBtn" data-act="book" disabled>Nhập điểm đón và điểm đến</button>
+      </div>
+      <div class="mapCol" id="mapCol" hidden>
+        <div id="map"></div>
+        <div class="mapMsg" id="mapMsg" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ĐƠN HÀNG ================= -->
+  <section id="orders" class="wrap" hidden>
+    <h2>Đơn hàng của bạn</h2>
+    <div class="ordStats" id="orderStats" hidden></div>
+    <div class="filters">
+      <select id="orderFilter" aria-label="Loại đơn"><option value="all">Tất cả loại đơn</option><option value="food">Đơn đồ ăn</option><option value="ride">Chuyến xe</option></select>
+      <select id="orderStatus" aria-label="Trạng thái"><option value="all">Mọi trạng thái</option><option value="active">Đang xử lý</option><option value="done">Đã hoàn tất</option><option value="cancelled">Đã hủy</option></select>
+      <button class="btn ghost" data-act="resetDemo">Xóa dữ liệu demo</button>
+    </div>
+    <div id="orderList"></div>
+  </section>
+
+  <!-- ================= TÀI KHOẢN ================= -->
+  <section id="account" class="wrap" hidden>
+    <h2>Tài khoản của tôi</h2>
+    <div class="acctGrid">
+      <div class="acctCard acMe" id="acMe"></div>
+      <div class="acctCard">
+        <h3>Thông tin cá nhân</h3>
+        <label class="acField">Họ và tên<input id="acName" maxlength="40" autocomplete="name" placeholder="Nhập tên của bạn"></label>
+        <label class="acField">Email đăng nhập<input id="acId" disabled></label>
+        <p class="msg" id="acMsg" role="status"></p>
+        <button class="btn" data-act="saveName">Lưu thay đổi</button>
+      </div>
+      <div class="acctCard" id="acPwCard">
+        <h3>Đổi mật khẩu</h3>
+        <p class="note" id="pwDemo" hidden>Chế độ demo chưa có mật khẩu thật. Điền FIREBASE_CONFIG trong js/config.js để đổi mật khẩu.</p>
+        <label class="acField">Mật khẩu hiện tại<input id="acCur" type="password" autocomplete="current-password"></label>
+        <label class="acField">Mật khẩu mới (tối thiểu 6 ký tự)<input id="acNew" type="password" autocomplete="new-password"></label>
+        <label class="acField">Nhập lại mật khẩu mới<input id="acNew2" type="password" autocomplete="new-password"></label>
+        <p class="msg" id="pwMsg" role="status"></p>
+        <button class="btn" id="pwGo" data-act="changePw">Đổi mật khẩu</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="ft">
+  <div class="ftMain">
+    <div class="wrap">
+      <div class="ftTop">
+        <div class="ftLogo">Go<span>Now</span></div>
+        <select id="lang" class="lang" aria-label="Ngôn ngữ"><option value="vi">Tiếng Việt</option></select>
+      </div>
+      <div class="ftCols">
+        <div>
+          <h3>Món được tìm nhiều</h3>
+          <ul>
+            <li><button class="fl" data-act="searchFor" data-id="Phở">Phở bò</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Cơm tấm">Cơm tấm</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Trà sữa">Trà sữa</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Bánh mì">Bánh mì</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Pizza">Pizza</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Cà phê">Cà phê</button></li>
+            <li><button class="fl" data-act="searchFor" data-id="Chè">Chè</button></li>
+          </ul>
+        </div>
+        <div><h3>Danh mục phổ biến</h3><ul id="ftCats"></ul></div>
+        <div>
+          <h3>Về GoNow</h3>
+          <ul>
+            <li><a class="fl" href="#">Về GoNow</a></li>
+            <li><a class="fl" href="#">Về dự án</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Hỗ trợ</h3>
+          <ul>
+            <li><button class="fl" data-act="toFaq">Câu hỏi thường gặp</button></li>
+            <li><a class="fl" href="#">Bán hàng cùng GoNow</a></li>
+            <li><a class="fl" href="#">Đăng ký làm tài xế</a></li>
+            <li><a class="fl" href="#">Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ftDark">
+    <div class="wrap ftDarkIn">
+      <div>
+        <h4>Khu vực hoạt động (mô phỏng)</h4>
+        <p class="cities"><span>TP.HCM</span><span>Hà Nội</span><span>Đà Nẵng</span><span>Cần Thơ</span><span>Hải Phòng</span></p>
+        <p class="copy">© GoNow 2026 • Dự án học tập, mọi dữ liệu và thanh toán đều mô phỏng.</p>
+        <p class="legal"><a href="#">Điều khoản</a> • <a href="#">Chính sách bảo mật</a></p>
+      </div>
+      <div class="ftRight">
+        <div class="social">
+          <a href="#" aria-label="Facebook"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a1 1 0 00-1 1v16a1 1 0 001 1h8.600v-7h-2.300v-2.800h2.300V10c0-2.300 1.400-3.600 3.500-3.600 1 0 1.900.1 2.100.1v2.400h-1.500c-1.100 0-1.400.5-1.400 1.300v1.800h2.800l-.4 2.800h-2.400v7H20a1 1 0 001-1V4a1 1 0 00-1-1z"/></svg></a>
+          <a href="#" aria-label="X (Twitter)"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.900 3h3.100l-6.800 7.700L23 21h-6.200l-4.900-6.400L6.300 21H3.200l7.300-8.300L2.700 3H9l4.400 5.900L18.900 3z"/></svg></a>
+        </div>
+        <div class="badges">
+          <a href="#" class="badge"><small>Tải trên</small><b>App Store</b></a>
+          <a href="#" class="badge"><small>Tải trên</small><b>Google Play</b></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= GIỎ HÀNG: ngăn kéo bên phải ================= -->
+<div id="drawerWrap" hidden>
+  <aside id="drawer" role="dialog" aria-label="Giỏ hàng"><div id="drawerBody"></div></aside>
+</div>
+
+<!-- ================= MODAL: cửa hàng / khu vực / xác nhận chuyến xe ================= -->
+<div id="modal" hidden><div class="box"><button class="x" data-act="close" aria-label="Đóng">✕</button><div id="modalBody"></div></div></div>
+
+<!-- ================= TRANG ĐĂNG NHẬP / ĐĂNG KÝ (toàn màn hình) ================= -->
+<div id="auth" hidden>
+  <div class="authTop">
+    <button class="logo" data-act="closeAuth" aria-label="Về trang chủ">Go<span>Now</span></button>
+    <span class="authLang"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg> Tiếng Việt</span>
+  </div>
+  <div class="authBox">
+    <h1 id="authTitle">Đăng nhập vào GoNow</h1>
+    <p class="note" id="authDemo" hidden>Chế độ demo: chưa điền Firebase trong js/config.js nên web chưa kiểm tra mật khẩu thật.</p>
+
+    <p class="note" id="authReason" hidden></p>
+
+    <div id="authForm">
+      <input id="aName" class="aIn" placeholder="Họ và tên" autocomplete="name" hidden>
+      <input id="aEmail" class="aIn" type="email" placeholder="Email" autocomplete="email">
+      <div id="authPhone" class="phoneRow" hidden>
+        <span class="cc">+84</span>
+        <input id="aPhone" class="aIn" type="tel" inputmode="numeric" placeholder="Số điện thoại, vd 912345678" autocomplete="tel-national">
+      </div>
+      <div class="passRow">
+        <input id="aPass" class="aIn" type="password" placeholder="Mật khẩu (tối thiểu 6 ký tự)" autocomplete="current-password">
+        <button class="showPass" data-act="togglePass" type="button">Hiện</button>
+      </div>
+
+      <label class="remember"><input type="checkbox" id="remember" checked> Ghi nhớ tôi trên thiết bị này</label>
+      <p class="msg bad" id="amsg" role="alert"></p>
+      <button class="btn block" id="authGo" data-act="authSubmit" disabled>Đăng nhập</button>
+      <p class="switch" id="authSwitch"></p>
+    </div>
+
+    <div id="authVerify" hidden>
+      <p class="note">Để chống đặt hàng giả, GoNow cần xác minh địa chỉ email của bạn.</p>
+      <section class="vStep">
+        <div class="vHead"><b>Email</b><span class="vBadge" id="vEmailBadge"></span></div>
+        <p id="vEmailText"></p>
+        <div class="vActs" id="vEmailActs">
+          <button class="btn" type="button" data-act="vEmailCheck">Tôi đã xác minh</button>
+          <button class="btn ghost" type="button" id="vResend" data-act="vEmailResend">Gửi lại email</button>
+        </div>
+      </section>
+      <p class="msg" id="vmsg" role="alert"></p>
+      <button class="btn block" type="button" id="vDone" data-act="vDone" disabled>Hoàn tất</button>
+      <button class="link2" type="button" data-act="logout">Đăng xuất</button>
+    </div>
+
+    <div class="authLinks">
+      <span><a href="#">Chính sách riêng tư</a> <a href="#">Điều khoản & Điều kiện</a></span>
+      <span>Cần hỗ trợ? <a href="#" class="blue">Trung tâm trợ giúp</a></span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= HỘP XÁC NHẬN (đăng xuất, xóa giỏ, hủy đơn...) ================= -->
+<div id="confirmWrap" hidden>
+  <div class="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitle" aria-describedby="cfmText">
+    <span class="cfmIcon" id="cfmIcon"></span>
+    <h3 id="cfmTitle"></h3>
+    <p id="cfmText"></p>
+    <div class="cfmActs"><button class="btn ghost" id="cfmNo" type="button"></button><button class="btn" id="cfmYes" type="button"></button></div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<!-- Firebase Authentication (bản compat). Nếu không có mạng hoặc chưa cấu hình, trang đăng nhập tự chạy chế độ demo. -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script defer src="js/config.js"></script>
+<script defer src="js/data.js"></script>
+<script defer src="js/storage.js"></script>
+<script defer src="js/guard.js"></script>
+<script defer src="js/app.js"></script>
+</body>
+</html>
