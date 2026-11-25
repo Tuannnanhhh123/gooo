@@ -1,0 +1,3390 @@
+/* [AI] Bo góc nhỏ: đổi độ bo ở biến --r (mọi nơi) và --r2 (khung ảnh). Đổi màu chủ đạo ở biến --brand.
+   Khung ảnh trống dùng màu nền --ph. */
+:root{--brand:#007a3b;--brand-d:#006330;--mint:#e7f6f1;--ink:#1d2228;--muted:#566070;--line:#e5e7eb;--soft:#f3f4f6;--ph:#e9ecee;
+  --chip:#fdeee3;--chip-tx:#7a3e1d;--red:#d93025;--ok:#1a8a4c;--r:4px;--r2:6px;--foot:#e9eef0;--dark:#383c47}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0;background:none;color:inherit;text-align:inherit}
+a{color:inherit;text-decoration:none}
+ul{padding:0;list-style:none}
+.wrap{max-width:1232px;margin:0 auto;padding:0 16px}
+:where(input:not([type=radio]):not([type=checkbox]),select){padding:10px 12px;border:1px solid #c8ccd1;border-radius:var(--r);background:#fff}
+input:focus,select:focus,button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+input[type=checkbox],input[type=radio]{accent-color:var(--brand)}
+
+/* Khung ảnh trống: nền xám, ảnh (nếu có) phủ kín. Không có ảnh thì chỉ còn khung xám. */
+.thumb,.logoBox,.catImg,.qIcon,.pic,.videoBox,.emptyArt{position:relative;background:var(--ph);overflow:hidden;display:block}
+.thumb img,.logoBox img,.catImg img,.qIcon img,.pic img,.emptyArt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- HEADER ---------- */
+.top{background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.1);position:relative;z-index:10}
+.bar{display:flex;align-items:center;gap:16px;min-height:80px;padding:0 40px}
+.logo{font-size:28px;font-weight:800;letter-spacing:-1.2px;color:var(--brand);text-align:left}
+.logo span{color:var(--ink)}
+.seg{display:flex;background:var(--soft);border-radius:var(--r);padding:4px}
+.seg button{padding:9px 28px;border-radius:3px;font-weight:600;color:#6b7280;transition:.15s}
+.seg button.active{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.loc{display:flex;align-items:center;gap:8px;color:#1769d1;font-size:14px;font-weight:500;white-space:nowrap;padding:6px 4px}
+.search{flex:1;min-width:160px;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border:1px solid #c8ccd1;border-radius:var(--r);background:#fff}
+.search:focus-within{outline:2px solid var(--brand);outline-offset:1px}
+.search input{flex:1;min-width:0;border:0;padding:0;outline:0;background:none;font-size:14px}
+.search button{display:grid;place-items:center;color:var(--ink)}
+.textBtn{padding:8px 10px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+.textBtn.active{border-color:var(--brand)}
+.cartBtn{height:44px;min-width:76px;padding:0 16px;border-radius:var(--r);background:var(--mint);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+.loginBtn{height:44px;padding:0 24px;border-radius:var(--r);background:var(--brand);color:#fff;font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:.15s}
+.loginBtn:hover{background:var(--brand-d)}
+
+/* ---------- TRANG CHỦ ---------- */
+/* Hàng ô nhanh: lưới đều, nổi lên che mép dưới hero. Ô danh mục dùng chung kiểu thẻ này. */
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:12px;margin-top:-44px;position:relative;z-index:2}
+.qk,.cat{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 8px 12px;background:#fff;border:1px solid var(--line);border-radius:var(--r2);
+  font-size:14px;font-weight:600;line-height:1.3;text-align:center;color:var(--ink);transition:.15s}
+.qk{border-color:transparent;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.qk:hover,.cat:hover{border-color:var(--brand);background:#f1fbf6;transform:translateY(-2px)}
+.qIcon{width:64px;height:64px;border-radius:var(--r2)}
+
+/* Hero: video làm nền toàn chiều rộng */
+.hero{--hh:clamp(420px,68vh,620px);position:relative;isolation:isolate;min-height:var(--hh);display:flex;align-items:center;color:#fff;
+  background:linear-gradient(135deg,#0a3b25,#00b14f);overflow:hidden}
+.heroMedia{position:absolute;inset:0;z-index:-2}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+.slide.on{opacity:1}
+.heroDots{position:absolute;left:50%;transform:translateX(-50%);bottom:64px;display:flex;gap:8px;align-items:center}
+.heroDots button{position:relative;width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.5);transition:.25s}
+.heroDots button::after{content:"";position:absolute;inset:-8px}
+.heroDots button.on{width:26px;background:#fff}
+.heroMedia video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.heroMedia iframe{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:0;pointer-events:none;
+  width:max(100vw,calc(var(--hh)*1.7778));height:max(56.25vw,var(--hh))}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,20,13,.8) 0%,rgba(6,20,13,.45) 55%,rgba(6,20,13,.18) 100%)}
+.heroIn{padding-top:56px;padding-bottom:104px}
+.hello{font-weight:600;color:rgba(255,255,255,.85)}
+.hero h1{font-size:clamp(34px,5.4vw,68px);line-height:1.08;font-weight:800;letter-spacing:-1.5px;margin:6px 0 16px;text-shadow:0 2px 20px rgba(0,0,0,.35)}
+.codes{font-size:15px;color:rgba(255,255,255,.92);max-width:460px}
+.codes b{background:rgba(255,255,255,.2);padding:1px 8px;border-radius:4px}
+.heroSound{position:absolute;right:16px;bottom:64px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px);transition:.15s}
+.heroSound:hover{background:rgba(0,0,0,.7)}
+
+h2{font-size:24px;font-weight:700;margin:48px 0 16px;letter-spacing:-.3px}
+.secHead{display:flex;justify-content:space-between;align-items:baseline;margin:48px 0 16px}
+.secHead h2{margin:0}
+.more{font-size:14px;font-weight:600}
+.sub{color:#555;margin:-8px 0 14px;font-size:14px}
+
+.railWrap{position:relative}
+.rail{display:flex;gap:20px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding:4px 2px 8px}
+.rail::-webkit-scrollbar{display:none}
+.next{position:absolute;right:-14px;top:42%;transform:translateY(-50%);width:40px;height:40px;border-radius:var(--r);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.22);font-size:24px;line-height:1;display:grid;place-items:center;text-align:center}
+.next:hover{background:var(--mint)}
+
+.cats{gap:12px}
+.cat{flex:0 0 132px}
+.catImg{width:100%;aspect-ratio:1;border-radius:var(--r)}
+
+.store{flex:0 0 164px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%}
+.logoBox{width:100%;aspect-ratio:1;border-radius:var(--r2);margin-bottom:10px}
+.sname{font-size:16px;font-weight:700;line-height:1.35}
+.smeta{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:6px}
+.chip{background:var(--chip);color:var(--chip-tx);font-size:12px;padding:2px 6px;border-radius:2px}
+.storeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:28px 20px}
+.loadMore{display:block;margin:36px auto 0;padding:13px 48px;border-radius:var(--r);background:var(--mint);color:#17483a;font-weight:700;transition:.15s}
+.loadMore:hover{background:#d4efe5}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.chk{display:flex;gap:6px;align-items:center;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+.rail .card{flex:0 0 250px}
+.card{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:box-shadow .2s}
+.card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.pic{height:150px}
+.promo{position:absolute;top:10px;left:0;background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:0 var(--r) var(--r) 0;z-index:1}
+.heart{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:var(--r);background:#fff;font-size:18px;color:#888;display:grid;place-items:center;text-align:center;z-index:1}
+.heart.on{color:var(--red)}
+.info{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.info small{color:var(--muted)}
+.info .btn{margin-top:auto}
+.price{font-weight:800;font-size:18px}
+.empty{padding:32px;text-align:center;color:var(--muted);grid-column:1/-1}
+
+.btn{background:var(--brand);color:#fff;padding:11px 22px;border-radius:var(--r);font-weight:700;transition:.15s;text-align:center}
+.btn:hover{background:var(--brand-d)}.btn:active{transform:scale(.98)}
+.btn:disabled{background:#eceeef;color:#a0a5ab;cursor:not-allowed;transform:none}
+.btn.block{display:block;width:100%;padding:13px}
+.btn.sm{padding:6px 14px;font-size:14px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid #9aa1a9}
+.btn.ghost:hover{background:var(--soft)}
+
+/* ---------- FAQ ---------- */
+.faq{background:#f5f5f5;border:1px solid #ececec;border-radius:var(--r2);overflow:hidden}
+.faq details{border-top:1px solid #e6e6e6}
+.faq details:first-child{border-top:0}
+.faq summary{padding:14px 16px;cursor:pointer;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";width:8px;height:8px;border-right:2px solid #666;border-bottom:2px solid #666;transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+.faq details[open] summary::after{transform:rotate(-135deg)}
+.faq p{padding:0 16px 16px;color:#555;font-size:14px}
+
+/* ---------- ĐẶT XE ---------- */
+.panel{border:1px solid var(--line);border-radius:var(--r2);padding:20px;display:grid;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:4px;font-weight:600}
+.note{font-size:13px;color:#4b5560;background:#effaf4;border-left:3px solid var(--brand);padding:8px 12px}
+#vehicles{display:grid;gap:10px}
+.veh{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r2);cursor:pointer;transition:.15s}
+.veh:hover{border-color:#999}
+.veh.sel{border:2px solid var(--brand);background:#f1fbf6;padding:11px}
+.veh div{flex:1}.veh small{color:var(--muted);display:block}
+
+/* ---------- THÀNH PHẦN DÙNG CHUNG CHO MODAL + GIỎ HÀNG ---------- */
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.mi{display:grid;flex:1}.mi small{color:var(--muted)}
+.qty{display:inline-flex;align-items:center;gap:8px}
+.qty i{font-style:normal;min-width:18px;text-align:center}
+.qty button{background:var(--soft);border-radius:var(--r);width:26px;height:26px;display:grid;place-items:center;text-align:center}
+.ico{color:#888;padding:2px 6px}
+.link{color:var(--red);margin:8px 0;text-decoration:underline}
+.link2{color:var(--brand-d);font-weight:600;text-decoration:underline}
+.vbox{display:flex;gap:8px;margin:12px 0 4px}.vbox input{flex:1;text-transform:uppercase}
+.msg{font-size:14px;min-height:20px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--red)}
+.pay{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pay label{display:flex;font-weight:500;border:1px solid var(--line);padding:6px 12px;border-radius:var(--r);align-items:center;gap:6px;margin:0}
+.sum .row.total{font-size:20px;font-weight:800;border:0}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.opt{display:flex;justify-content:space-between;width:100%;padding:12px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px}
+.opt:hover{border-color:#999}
+.opt.sel{border:2px solid var(--brand);background:#f1fbf6;padding:11px;font-weight:600}
+.qr{display:flex;gap:16px;align-items:center;border:1px solid #cfe9db;background:#f6fcf9;border-radius:var(--r2);padding:14px;margin:10px 0}
+.qr img{width:170px;height:170px;object-fit:contain;background:#fff;border-radius:var(--r);flex:none}
+.qrInfo{display:grid;gap:3px;font-size:14px;min-width:0;word-break:break-word}
+.qrInfo small{color:var(--muted);margin-top:6px}
+.qr .msg{flex:1}
+
+/* ---------- MODAL ---------- */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:20;padding:12px}
+.box{background:#fff;border-radius:var(--r2);width:min(560px,100%);max-height:92vh;overflow:auto;padding:24px;position:relative;animation:pop .18s}
+@keyframes pop{from{transform:translateY(10px);opacity:0}}
+.x{position:absolute;top:10px;right:14px;font-size:20px;width:32px;height:32px}
+.box h2{font-size:22px;margin:0 0 12px}
+.box .sub{margin:0 0 8px}
+.menuRow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+
+/* ---------- GIỎ HÀNG: ngăn kéo bên phải ---------- */
+#drawerWrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;justify-content:flex-end}
+#drawer{background:#fff;width:min(480px,100%);height:100%;animation:slide .22s ease-out}
+@keyframes slide{from{transform:translateX(40px);opacity:0}}
+#drawerBody{display:flex;flex-direction:column;height:100%}
+.dHead{padding:18px 20px 6px}
+.dx{width:36px;height:36px;display:grid;place-items:center;color:#333;margin-left:-8px}
+.dTitle{font-size:22px;margin:0;padding:0 20px 12px;border-bottom:1px solid var(--line)}
+.dScroll{flex:1;overflow:auto;padding:0 20px 16px}
+.dFoot{border-top:1px solid var(--line);padding:14px 20px 18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+.dFoot .row{padding:5px 0;border:0}
+.dFoot .row.total{padding:8px 0}
+.line{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.line .thumb{width:64px;height:64px;flex:none}
+.lmeta{flex:1;display:grid;gap:4px;min-width:0}
+.lmeta small{color:var(--muted)}
+.dEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px 80px;gap:8px}
+.dEmpty .emptyArt{width:180px;height:150px;margin-bottom:16px;background:transparent}
+.dEmpty h3{font-size:20px;font-weight:500}
+.dEmpty p{font-size:13px;color:var(--muted)}
+.dEmpty .link2{margin-top:14px;text-decoration:none;color:#1769d1;font-weight:500}
+
+/* ---------- ĐƠN HÀNG ---------- */
+.order{border:1px solid var(--line);border-radius:var(--r2);padding:16px;margin-bottom:14px}
+.order.cancelled{opacity:.6}
+.order header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-weight:700}
+.tag{font-size:12px;padding:2px 10px;border-radius:var(--r);background:#fff1e6;color:#c4500a}
+.tag.bad{background:#fde8e7;color:var(--red)}.tag.done{background:#e3f5ea;color:var(--ok)}
+.oItems{display:grid;gap:8px;margin:10px 0}
+.oItem{display:flex;align-items:center;gap:10px}
+.oItem .thumb{width:48px;height:48px;flex:none}
+.steps{display:flex;gap:4px;margin:14px 0 6px;list-style:none;padding:0}
+.steps li{flex:1;text-align:center;font-size:12px;color:#888;border-top:4px solid var(--line);padding-top:6px}
+.steps li.on{border-color:var(--brand);color:var(--ink);font-weight:600}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--r);transition:.3s;z-index:60;max-width:90vw}
+#toast.on{transform:translate(-50%,0)}
+
+/* ---------- TRANG ĐĂNG NHẬP ---------- */
+#auth{position:fixed;inset:0;background:#fff;z-index:40;overflow:auto;display:flex;flex-direction:column}
+.authTop{display:flex;justify-content:space-between;align-items:center;height:80px;padding:0 32px;border-bottom:1px solid var(--line);flex:none}
+.authLang{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.authBox{width:min(400px,100%);margin:0 auto;padding:36px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.authBox h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.mtabs{display:flex;border-bottom:1px solid var(--line)}
+.mtab{padding:8px 16px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.mtab.on{color:var(--ink);border-color:var(--brand)}
+.aIn{width:100%;height:48px;font-size:16px}
+.aIn:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,177,79,.18)}
+.phoneRow{display:flex;gap:8px}
+.cc{flex:none;width:72px;height:48px;display:grid;place-items:center;border:1px solid #c8ccd1;border-radius:var(--r);font-size:15px}
+.passRow{position:relative}
+.showPass{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:600;color:var(--brand-d)}
+.passRow .aIn{padding-right:60px}
+.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:14px}
+.remember input{width:18px;height:18px}
+#auth .msg{min-height:0}
+#auth .btn.block{height:48px;padding:0}
+.switch{font-size:14px;text-align:center;color:#4b5560}
+.authLinks{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:56px;font-size:13px}
+.authLinks a{color:#1769d1;margin-right:10px}
+.authLinks .blue{margin:0}
+
+/* ---------- FOOTER ---------- */
+.ft{margin-top:56px}
+.ftMain{background:var(--foot);padding:32px 0 56px}
+.ftTop{display:flex;justify-content:space-between;align-items:center;padding-bottom:24px;border-bottom:1px solid #dbe2e5;margin-bottom:28px}
+.ftLogo{font-size:28px;font-weight:800;letter-spacing:-1.2px}.ftLogo span{color:var(--brand)}
+.lang{border:0!important;background:none!important;font-size:12px;padding:4px!important}
+.ftCols{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.ftCols h3{font-size:16px;font-weight:600;color:#454d57;margin-bottom:22px}
+.ftCols li{margin-bottom:8px}
+.fl{font-size:14px;color:#4b5560;display:inline-block}
+.fl:hover{color:var(--ink);text-decoration:underline}
+.ftDark{background:var(--dark);color:#fff;padding:32px 0}
+.ftDarkIn{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.ftDark h4{font-size:16px;font-weight:600;margin-bottom:10px}
+.cities{display:flex;flex-wrap:wrap;margin-bottom:14px}
+.cities span{padding:0 12px;border-right:1px solid #7c8190;line-height:1.1}
+.cities span:first-child{padding-left:0}.cities span:last-child{border:0}
+.copy{color:#9aa0ad;font-size:14px;margin-bottom:18px}
+.legal{font-size:12px;font-weight:600}.legal a:hover{text-decoration:underline}
+.ftRight{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;gap:20px}
+.social{display:flex;gap:20px}
+.badges{display:flex;gap:16px}
+.badge{display:flex;flex-direction:column;background:#000;border:1px solid #8b8f9a;border-radius:var(--r);padding:6px 16px;line-height:1.15}
+.badge small{font-size:10px}.badge b{font-size:16px}
+
+/* ---------- RESPONSIVE ---------- */
+@media(min-width:1081px){.top{position:sticky;top:0}html{scroll-padding-top:96px}}
+@media(max-width:1080px){
+  .bar{flex-wrap:wrap;padding:10px 16px;gap:10px}
+  .logo{margin-right:auto}
+  .seg{order:5}.loc{order:6;margin-right:auto}.search{order:7;flex:1 1 100%}
+  .next{right:0}
+}
+@media(max-width:820px){
+  .hero::after{background:rgba(6,20,13,.55)}
+  .heroIn{padding-top:40px;padding-bottom:76px}
+  .codes{max-width:none}
+}
+@media(max-width:700px){
+  .seg{width:100%}.seg button{flex:1;padding:9px 12px}.loc{width:100%}
+  .logo{font-size:24px}.textBtn{padding:6px 4px;font-size:14px}.loginBtn{height:40px;padding:0 14px;max-width:130px;font-size:14px}
+  .cartBtn{height:40px;min-width:58px;padding:0 10px}.bar{gap:8px}
+  .two{grid-template-columns:1fr}.steps li{font-size:10px}
+  .ftCols{grid-template-columns:1fr 1fr}.ftRight{align-items:flex-start}
+  .qr{flex-direction:column;align-items:flex-start}.qr img{width:100%;max-width:240px;height:auto;aspect-ratio:1}
+  h2,.secHead{margin-top:36px}
+  .authTop{padding:0 16px}.authLinks{margin-top:36px}
+}
+/* ---------- ĐẶT XE + GOOGLE MAPS ---------- */
+.rideLayout{display:grid;gap:20px;align-items:start}
+#ride.withMap .rideLayout{grid-template-columns:minmax(340px,440px) minmax(0,1fr)}
+.mapCol{position:sticky;top:84px;height:min(640px,calc(100vh - 110px));min-height:380px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--line);background:var(--ph)}
+#map{position:absolute;inset:0}
+.mapMsg{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:var(--ph);color:var(--muted);font-weight:600;padding:20px;text-align:center}
+#rideMapUI{display:grid;gap:12px}
+.route{display:grid;grid-template-columns:16px minmax(0,1fr) 38px;gap:10px;align-items:center}
+.routeDots{display:flex;flex-direction:column;align-items:center;gap:4px}
+.routeDots i{width:12px;height:12px;border-radius:50%}
+.dotA{background:var(--brand)}.dotB{background:var(--red);border-radius:2px!important}
+.routeDots .dash{height:26px;border-left:2px dotted #b8bec5}
+.routeInputs{display:grid;gap:10px}
+.acBox{position:relative}
+.acBox input{width:100%;font-weight:500;padding-right:44px}
+.gps{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;color:var(--brand);display:grid;place-items:center}
+.gps:hover{background:var(--mint)}
+.swap{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:#4b5560;transition:.15s}
+.swap:hover{background:var(--soft);border-color:#b8bec5}
+.acList{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;background:#fff;border:1px solid var(--line);border-radius:var(--r2);box-shadow:0 12px 32px rgba(0,0,0,.16);max-height:300px;overflow:auto}
+.acItem{display:grid;gap:1px;width:100%;padding:10px 14px;text-align:left;border-bottom:1px solid var(--soft)}
+.acList li:last-child .acItem{border-bottom:0}
+.acItem:hover,.acItem:focus-visible{background:var(--soft)}
+.acItem small{color:var(--muted)}
+.acEmpty{padding:14px;color:var(--muted);font-size:14px}
+.pin{position:relative;margin-bottom:8px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:grab}
+.pin::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);border:5px solid transparent}
+.pin.from{background:var(--brand)}.pin.from::after{border-top-color:var(--brand)}
+.pin.to{background:var(--red)}.pin.to::after{border-top-color:var(--red)}
+@media(max-width:900px){
+  #ride.withMap .rideLayout{grid-template-columns:1fr}
+  .mapCol{position:relative;top:0;height:320px;min-height:0;order:-1}
+}
+
+/* ---------- HỘP XÁC NHẬN ---------- */
+#confirmWrap{position:fixed;inset:0;z-index:60;background:rgba(15,20,25,.55);backdrop-filter:blur(2px);display:grid;place-items:center;padding:16px;animation:fade .15s}
+.cfm{background:#fff;width:min(400px,100%);border-radius:14px;padding:28px 24px 20px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);animation:pop .18s}
+.cfmIcon{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--mint);color:var(--brand)}
+.cfmIcon.danger{background:#fdecea;color:var(--red)}
+.cfm h3{font-size:20px;margin-bottom:6px;letter-spacing:-.2px}
+.cfm p{color:var(--muted);font-size:14.5px}
+.cfmActs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.cfmActs .btn{padding:12px}
+.btn.danger{background:var(--red)}.btn.danger:hover{background:#b3261e}
+@keyframes fade{from{opacity:0}}
+
+@media(max-width:700px){
+  .quick{margin-top:-28px;grid-template-columns:repeat(4,1fr);gap:8px}
+  .qk,.cat{font-size:13px;padding:10px 4px}
+  .qIcon{width:52px;height:52px}
+  .cat{flex-basis:112px}
+  .heroSound,.heroDots{bottom:44px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* ---------- CĂN CHỈNH BỐ CỤC ---------- */
+.bar{max-width:1232px;margin-left:auto;margin-right:auto}            /* header cùng bề rộng với nội dung */
+.heroIn{width:100%}                                                   /* chữ hero căn đúng lề trái nội dung */
+.search input:-webkit-autofill{-webkit-box-shadow:0 0 0 100px #fff inset;-webkit-text-fill-color:var(--ink)}
+@media(min-width:701px){
+  .bar{padding-left:16px;padding-right:16px}
+  .cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;overflow:visible;padding:4px 0 8px}   /* danh mục lấp đầy hàng, thẻ bằng nhau */
+  .cats .cat{flex:none;width:auto}
+  .cats~.next{display:none}
+}
+.sname{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em;font-size:15px}
+.smeta{display:flex;flex-direction:column;gap:1px;white-space:normal}
+.ph{position:absolute;inset:0;display:grid;place-items:center;font-size:44px;background:var(--mint)}   /* ô thay thế khi chưa có ảnh */
+/* ==========================================================================
+   [AI] NÂNG CẤP TRANG CHỦ v2 – chữ, khoảng cách, nút bấm.
+   Khối này nằm CUỐI file để ghi đè an toàn; xóa cả khối là về lại bản cũ.
+   Không đụng tới ảnh, video hay đường dẫn media.
+   ========================================================================== */
+:root{
+  --head:#0b1117;            /* màu tiêu đề: đậm hơn --ink để tăng tương phản */
+  --cta:#007a3b;             /* nút chính: chữ trắng đạt tương phản ~5.4:1 */
+  --cta-d:#006330;
+  --btn-r:12px;              /* độ bo nút */
+  --sec-gap:96px;            /* khoảng cách giữa các section lớn */
+}
+
+/* ---------- 1) CHỮ ---------- */
+.hero h1{
+  letter-spacing:-.02em; line-height:1.15; font-weight:800;
+  text-shadow:0 2px 24px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.3);
+}
+.hero::after{background:linear-gradient(90deg,rgba(6,20,13,.86) 0%,rgba(6,20,13,.52) 55%,rgba(6,20,13,.22) 100%)}  /* lớp phủ đậm hơn một chút cho chữ dễ đọc */
+h2{color:var(--head); font-size:clamp(24px,2.4vw,30px); font-weight:800; letter-spacing:-.02em; line-height:1.25}
+.box h2{font-size:22px; letter-spacing:-.01em}
+.sub{color:#4b5563}
+.more{color:var(--cta); font-weight:700}
+.more:hover{text-decoration:underline; text-underline-offset:4px}
+
+/* ---------- 2) KHOẢNG CÁCH ---------- */
+.secHead{margin:var(--sec-gap) 0 24px}
+.secHead + .sub{margin-top:-12px; margin-bottom:20px}
+main > section > .wrap > .secHead:first-of-type{margin-top:72px}   /* "Danh mục món ăn" ngay dưới hàng ô nhanh */
+section.wrap > h2{margin-top:56px; margin-bottom:20px}             /* Đặt xe / Đơn hàng */
+.rail{gap:24px; padding:6px 2px 12px}
+.grid,.storeGrid{gap:24px}
+.loadMore{margin-top:48px}
+.faq{margin-bottom:var(--sec-gap)}
+.wrap{padding-left:24px; padding-right:24px}
+
+/* ---------- 3) NÚT BẤM (CTA) ---------- */
+.btn,.loginBtn,.cartBtn,.loadMore,.btn.ghost{border-radius:var(--btn-r)}
+.seg{border-radius:calc(var(--btn-r) + 2px)}
+.seg button{border-radius:var(--btn-r)}
+.next,.qty button,.heart{border-radius:var(--btn-r)}
+
+/* Nút chính: đậm, rõ, có bóng; hover nổi lên, bấm thì lún xuống */
+.btn:not(.ghost):not(.danger):not(:disabled),.loginBtn{
+  background:var(--cta); color:#fff; font-weight:700; letter-spacing:.005em;
+  box-shadow:0 1px 2px rgba(0,60,30,.25), 0 6px 14px -6px rgba(0,122,59,.55);
+  transition:background .18s, transform .18s, box-shadow .18s;
+}
+.btn:not(.ghost):not(.danger):not(:disabled):hover,.loginBtn:hover{
+  background:var(--cta-d); transform:translateY(-2px);
+  box-shadow:0 2px 4px rgba(0,60,30,.3), 0 12px 22px -8px rgba(0,122,59,.65);
+}
+.btn:not(:disabled):active,.loginBtn:active{transform:translateY(0) scale(.98); box-shadow:0 1px 2px rgba(0,60,30,.3)}
+.btn:disabled{box-shadow:none}
+
+/* Nút phụ: viền rõ hơn, hover đổi sang tông thương hiệu */
+.btn.ghost{border:1.5px solid #6b7280; color:var(--head); font-weight:700; transition:background .18s,border-color .18s,transform .18s}
+.btn.ghost:hover{background:var(--mint); border-color:var(--cta); color:var(--cta-d); transform:translateY(-1px)}
+
+/* Nút giỏ hàng và "Xem thêm": tông mint đậm chữ hơn, hover rõ */
+.cartBtn,.loadMore{color:#0f3d2e; font-weight:700; transition:background .18s, transform .18s}
+.cartBtn:hover,.loadMore:hover{background:#cfeee1; transform:translateY(-1px)}
+
+/* Trạng thái bàn phím: vòng focus 2 lớp, nhìn rõ trên cả nền sáng lẫn nền tối */
+.btn:focus-visible,.loginBtn:focus-visible,.cartBtn:focus-visible,.loadMore:focus-visible{
+  outline:none; box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--cta);
+}
+
+@media (max-width:760px){
+  :root{--sec-gap:64px}
+  .wrap{padding-left:16px; padding-right:16px}
+  .secHead{margin-top:var(--sec-gap)}
+  section.wrap > h2{margin-top:40px}
+  .rail{gap:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .btn,.loginBtn,.cartBtn,.loadMore{transition:none}
+  .btn:hover,.loginBtn:hover,.cartBtn:hover,.loadMore:hover{transform:none}
+}
+
+/* ==========================================================================
+   [AI] SỬA GIAO DIỆN ĐIỆN THOẠI v3 (≤700px). Chỉ chỉnh cỡ chữ, bố cục, khoảng cách;
+   không đụng tới ảnh, video hay đường dẫn media. Xóa cả khối này để quay về bản trước.
+   ========================================================================== */
+.fl{padding:0}                                   /* nút <button> trong chân trang bị lệch lề so với link <a> */
+@media(max-width:700px){
+  :root{--sec-gap:56px}
+
+  /* Header gọn: logo – Đơn hàng – giỏ – Đăng nhập nằm cùng một hàng */
+  .bar{padding:10px 16px 12px;gap:8px 6px}
+  .logo{font-size:22px;letter-spacing:-.04em}
+  .textBtn{padding:6px 2px;font-size:13px}
+  .cartBtn{height:38px;min-width:48px;padding:0 8px;gap:6px}
+  .loginBtn{height:38px;padding:0 12px;font-size:13px;max-width:none;min-width:0}
+  .seg button{padding:8px 10px}
+  .search{height:42px}
+  .loc{padding:2px 0}
+
+  /* Hero: bớt khoảng trống, chữ không tràn */
+  .hero{--hh:clamp(360px,54vh,440px)}
+  .heroIn{padding-top:28px;padding-bottom:84px}
+  .hero h1{font-size:clamp(28px,8.6vw,36px);letter-spacing:-.02em;line-height:1.15;margin:4px 0 12px}
+  .codes{font-size:14px;line-height:1.6}
+
+  /* Hàng ô nhanh: 1 hàng cuộn ngang thay cho lưới 4+3 bị lẻ */
+  .quick{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;
+    margin:-30px -16px 0;padding:6px 16px 14px}
+  .quick::-webkit-scrollbar{display:none}
+  .qk{flex:0 0 78px;scroll-snap-align:start;font-size:12.5px;padding:10px 4px}
+  .qIcon{width:48px;height:48px}
+
+  /* Tiêu đề & khoảng cách */
+  h2{font-size:22px}
+  .secHead{margin:var(--sec-gap) 0 16px}
+  .secHead + .sub{margin-top:-6px;margin-bottom:16px;font-size:14px}
+  main > section > .wrap > .secHead:first-of-type{margin-top:36px}
+  section.wrap > h2{margin-top:32px}
+
+  /* Hàng cuộn ngang: tràn sát mép màn hình, bỏ nút mũi tên (đã vuốt được) */
+  .rail{margin:0 -16px;padding:4px 16px 12px;gap:14px;scroll-snap-type:x proximity}
+  .rail > *{scroll-snap-align:start}
+  .next{display:none}
+  .rail .card{flex-basis:220px}
+  .store{flex-basis:150px}
+
+  /* Bộ lọc: lưới 2 cột đều nhau */
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .filters select{width:100%;min-width:0;padding:10px 8px}
+  .filters .chk{grid-column:1/-1}
+
+  /* Lưới món & quán: 2 cột thay vì 1 cột khổng lồ */
+  .grid{grid-template-columns:1fr 1fr;gap:12px}
+  .storeGrid{grid-template-columns:1fr 1fr;gap:20px 12px}
+  .grid .pic{height:112px}
+  .grid .info{padding:10px;gap:3px}
+  .grid .info b{font-size:14px;line-height:1.3}
+  .grid .info small{font-size:12px;line-height:1.35}
+  .grid .info small:last-of-type{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .grid .price{font-size:16px;margin-top:2px}
+  .grid .btn.sm{padding:8px 6px;font-size:13px}
+  .promo{font-size:12px;padding:2px 8px}
+  .heart{width:30px;height:30px}
+  .loadMore{margin-top:36px;width:100%;max-width:340px}
+
+  /* FAQ */
+  .faq{margin-bottom:var(--sec-gap)}
+
+  /* Chân trang */
+  .ftCols{gap:20px 16px}
+  .ftCols h3{margin-bottom:12px;font-size:15px}
+  .ftCols li{margin-bottom:0}
+  .fl{padding:7px 0;font-size:14px}
+  .cities{gap:4px 0}
+  .cities span{border:0;padding:0 14px 0 0}
+  .ftDarkIn{gap:20px}
+  .badges{gap:12px;flex-wrap:wrap}
+}
+@media(max-width:360px){
+  .logo{font-size:20px}
+  .textBtn{font-size:12px}
+  .loginBtn{padding:0 9px;font-size:12px}
+  .cartBtn{min-width:44px;padding:0 6px}
+  .grid .btn.sm{font-size:12px}
+}
+@media(max-width:700px){.quick,.rail{scroll-padding-inline:16px}}
+.store{padding:0}                                  /* <button> mặc định có lề 6px làm thẻ quán lệch so với thẻ khác */
+@media(max-width:700px){.filters select:nth-of-type(3){grid-column:1/-1}}
+
+.chip{font-size:13px;padding:3px 8px;border-radius:4px}
+.smeta,.info small{color:#566070}
+
+/* ==========================================================================
+   [AI] v4: carousel hero · trang tài khoản · COD · trang đơn hàng mới
+   ========================================================================== */
+
+/* ---------- HERO CAROUSEL ---------- */
+.hslide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;background:linear-gradient(135deg,#06140d 0%,#0a4d2e 60%,#00a14a 100%)}
+.hslide.tone1{background:linear-gradient(135deg,#0a1f33 0%,#0b5d63 60%,#17b5a0 100%)}
+.hslide.tone2{background:linear-gradient(135deg,#2b1408 0%,#8a3b0f 60%,#f08a24 100%)}
+.hslide.tone3{background:linear-gradient(135deg,#1a1033 0%,#4a2a86 60%,#9b6bf0 100%)}
+.hslide.on{opacity:1}
+.hslide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.heroIn > *{transition:opacity .25s ease,transform .25s ease}
+.heroIn.swap > *{opacity:0;transform:translateY(10px)}
+.heroCta{margin-top:22px}
+.hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled){background:#fff;color:var(--cta-d);height:50px;padding:0 30px;font-size:16px;box-shadow:0 10px 28px -10px rgba(0,0,0,.55)}
+.hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled):hover{background:#f0fff6;color:var(--cta-d)}
+.heroNav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;font-size:28px;line-height:1;display:grid;place-items:center;backdrop-filter:blur(6px);transition:background .18s,transform .18s;z-index:2}
+.heroNav:hover{background:rgba(0,0,0,.65);transform:translateY(-50%) scale(1.06)}
+.heroNav.prev{left:18px}.heroNav.nxt{right:18px}
+.heroNav[hidden]{display:none}
+.heroDots{z-index:2}
+
+/* ---------- NÚT ĐĂNG NHẬP → TÀI KHOẢN ---------- */
+.loginBtn{display:inline-flex;align-items:center;gap:8px}
+.avatar{display:grid;place-items:center;flex:none;border-radius:50%;background:linear-gradient(135deg,#0a8f4a,#00c060);color:#fff;font-weight:800}
+.avatar.sm{width:26px;height:26px;font-size:13px;background:#fff;color:var(--cta)}
+.uname{overflow:hidden;text-overflow:ellipsis;min-width:0}
+
+/* ---------- TRANG TÀI KHOẢN ---------- */
+#account{padding-bottom:var(--sec-gap)}
+.acctGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.acctCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 8px 30px -18px rgba(10,30,20,.35)}
+.acctCard h3{margin:0 0 16px;font-size:18px;letter-spacing:-.01em}
+.acMe{grid-column:1/-1;display:flex;gap:24px;align-items:center;flex-wrap:wrap;background:linear-gradient(135deg,#f2fbf6,#fff)}
+.acMe .avatar{width:72px;height:72px;font-size:30px;box-shadow:0 10px 24px -10px rgba(0,122,59,.6)}
+.acWho{flex:1 1 200px;min-width:0}
+.acWho h3{margin:0 0 4px;font-size:22px;overflow:hidden;text-overflow:ellipsis}
+.acWho p{margin:0;color:var(--muted)}
+.acStats{display:flex;gap:12px;flex-wrap:wrap}
+.acStats div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:104px;text-align:center}
+.acStats b{display:block;font-size:18px}.acStats span{font-size:12px;color:var(--muted)}
+.acMe .acts{display:flex;gap:10px;flex-wrap:wrap;width:100%;margin:0}
+.acField{display:grid;gap:6px;margin-bottom:14px;font-weight:600;font-size:14px;color:var(--head)}
+.acField input{height:46px;padding:0 14px;border:1px solid #c9d1d8;border-radius:12px;font:inherit;font-weight:500;background:#fff}
+.acField input:focus{outline:none;border-color:var(--cta);box-shadow:0 0 0 3px rgba(0,122,59,.18)}
+.acField input:disabled{background:#f3f5f7;color:#6b7280}
+#acPwCard.off{opacity:.7}
+
+/* ---------- THANH TOÁN COD ---------- */
+.codBox{display:flex;gap:12px;align-items:center;margin:14px 0;padding:14px;border:1.5px solid var(--cta);background:#f2fbf6;border-radius:14px}
+.codIcon{font-size:26px;line-height:1}
+.codBox b{display:block;color:var(--head)}.codBox small{color:#44505c;line-height:1.45}
+
+/* ---------- ĐẶT XE: gợi ý ---------- */
+.rideTip{margin:0 0 12px;padding:10px 12px;background:#f2fbf6;border-radius:10px;font-size:13px;line-height:1.5;color:#2f4a3c}
+
+/* ---------- TRANG ĐƠN HÀNG ---------- */
+.ordStats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 20px}
+.ordStats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 6px 20px -16px rgba(10,30,20,.5)}
+.ordStats b{display:block;font-size:22px;letter-spacing:-.02em;color:var(--head)}
+.ordStats span{font-size:13px;color:var(--muted)}
+#orderList{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:20px;align-items:start}
+.ordCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 12px 34px -22px rgba(10,30,20,.55);display:flex;flex-direction:column;gap:14px}
+.ordCard.cancelled{opacity:.72}
+.ordCard header{display:flex;align-items:center;gap:12px;font-weight:400}
+.oIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:#e7f7ee;flex:none}
+.oIcon.ride{background:#e8f0ff}
+.oHead{flex:1;min-width:0}.oHead b{display:block;font-size:16px;color:var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oHead small{color:var(--muted)}
+.tag{white-space:nowrap}
+.tag.live{background:#fff1e6;color:#b04a06}
+.track{display:flex;list-style:none;margin:2px 0 0;padding:0}
+.track li{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:11.5px;color:#7b8794;text-align:center;line-height:1.25}
+.track li::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:#e2e8ee;z-index:0}
+.track li:first-child::before{display:none}
+.track li i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:#e2e8ee;color:#6b7785}
+.track li.done i{background:var(--cta);color:#fff}.track li.done::before,.track li.now::before{background:var(--cta)}
+.track li.now i{background:#fff;color:var(--cta);box-shadow:0 0 0 3px var(--cta)}
+.track li.now,.track li.done{color:var(--head);font-weight:600}
+.oCancel{margin:0;padding:10px 12px;background:#fde8e7;color:var(--red);border-radius:10px;font-size:14px}
+.oStore{margin:0;font-size:14px;color:#44505c}
+.oLines{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.oLines li{display:flex;align-items:center;gap:12px}
+.oLines .thumb{width:52px;height:52px;border-radius:10px;flex:none}
+.oiName{flex:1;min-width:0}.oiName b{display:block;font-size:14.5px}.oiName small{color:var(--muted)}
+.oRoute{display:grid;gap:10px;position:relative}
+.oRoute div{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.oRoute i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;color:#fff;flex:none}
+.oRoute .rA{background:var(--cta)}.oRoute .rB{background:#d93025}
+.oInfo{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0;padding:12px 14px;background:#f6f8fa;border-radius:12px}
+.oInfo div{min-width:0}.oInfo dt{font-size:12px;color:var(--muted)}.oInfo dd{margin:2px 0 0;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.oSum{display:grid;gap:6px;font-size:14px;border-top:1px dashed #cfd6dd;padding-top:12px}
+.oSum div{display:flex;justify-content:space-between;color:#44505c}
+.oSum .disc{color:var(--cta)}
+.oSum .tot{font-size:17px;color:var(--head);padding-top:6px}.oSum .tot b{font-size:20px}
+.ordCard .acts{display:flex;gap:10px;flex-wrap:wrap;margin:0}
+.ordEmpty{grid-column:1/-1;text-align:center;padding:48px 16px;border:1.5px dashed #cfd6dd;border-radius:18px}
+.ordEmpty span{font-size:44px}.ordEmpty p{margin:8px 0 16px;color:#44505c}
+
+@media(max-width:900px){.acctGrid{grid-template-columns:1fr}.ordStats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+  .heroNav{display:none}
+  .hero .heroBtn.btn:not(.ghost):not(.danger):not(:disabled){height:46px;padding:0 24px;font-size:15px}
+  .heroCta{margin-top:16px}
+  .acctCard{padding:18px}.acMe{gap:16px}.acMe .avatar{width:60px;height:60px;font-size:26px}
+  .acStats{width:100%}.acStats div{flex:1;min-width:0;padding:8px 6px}
+  .ordStats{gap:10px}.ordStats div{padding:12px}
+  #orderList{grid-template-columns:1fr;gap:16px}
+  .ordCard{padding:16px;border-radius:16px}
+  .track li{font-size:10px}.track li i{width:24px;height:24px;font-size:11px}.track li::before{top:11px}
+  .oInfo{grid-template-columns:1fr}
+  .filters select{min-width:0}
+}
+.acctCard .msg{margin:0 0 12px}.acctCard .msg:empty{display:none}
+.acctCard .note{margin:0 0 14px}
+@media(max-width:700px){#orders .filters .btn.ghost{grid-column:1/-1}}
+
+/* ---------- OpenStreetMap (Leaflet) ---------- */
+.mapCol{isolation:isolate}#map{z-index:0}
+.osmPin{background:none;border:0}
+.osmPin .pin{margin:0}
+.leaflet-container{font-family:inherit}
+
+/* ==========================================================================
+   [AI] v5: sửa carousel · hàng cuộn ngang trên điện thoại · thanh lọc gọn đẹp
+   ========================================================================== */
+
+/* Carousel: ảnh cũ giữ nguyên cho tới khi ảnh mới phủ kín; chữ chỉ hiện khi ảnh đầu đã sẵn sàng */
+.hslide{z-index:0}
+.hslide.prev{opacity:1;z-index:1;transition:none}
+.hslide.on{opacity:1;z-index:2}
+.heroIn{transition:opacity .5s ease}
+.hero.loading .heroIn,.hero.loading .heroDots,.hero.loading .heroNav{opacity:0}
+
+/* Hàng cuộn ngang: thấy một phần thẻ kế tiếp để biết còn nữa, kéo chuột được */
+.railWrap{min-width:0}
+.rail,.quick{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.rail.drag,.quick.drag{scroll-behavior:auto;scroll-snap-type:none;cursor:grabbing;user-select:none}
+@media(max-width:700px){
+  .rail .card{flex-basis:200px}
+  .rail{scroll-padding-inline:16px}
+}
+
+/* Thanh lọc: ô chọn viền mảnh, mũi tên tự vẽ, "món yêu thích" là chip bật/tắt */
+.filters select{
+  appearance:none;-webkit-appearance:none;height:42px;padding:0 38px 0 14px;font-size:14px;font-weight:500;color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23566070' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E") no-repeat right 14px center;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.filters select:hover{border-color:#b8bec6}
+.filters select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,122,59,.12);outline:0}
+.filters .chk{position:relative;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;font-size:14px;font-weight:500;
+  border:1px solid var(--line);border-radius:var(--r);background:#fff;cursor:pointer;user-select:none;transition:.15s}
+.filters .chk:hover{border-color:#b8bec6}
+.filters .chk input{position:absolute;opacity:0;pointer-events:none}
+.filters .chk::before{content:"\2661";font-size:16px;line-height:1;color:#8a929c}
+.filters .chk:has(input:checked){border-color:var(--brand);background:var(--mint);color:var(--brand-d)}
+.filters .chk:has(input:checked)::before{content:"\2665";color:var(--red)}
+.filters .chk:has(input:focus-visible){outline:2px solid var(--brand);outline-offset:2px}
+@media(max-width:700px){.filters select{width:100%;padding:0 34px 0 12px;background-position:right 12px center}}
+
+
+/* ==========================================================================
+   [AI] v6: xác minh email · giảm bo tròn toàn trang
+   ========================================================================== */
+.vStep{border:1px solid var(--line);border-radius:var(--r2);padding:14px;display:flex;flex-direction:column;gap:10px}
+.vHead{display:flex;justify-content:space-between;align-items:center}
+.vStep p{font-size:14px;color:var(--muted)}
+.vBadge{font-size:12px;font-weight:600;padding:3px 8px;border-radius:var(--r);background:#fdeee3;color:var(--chip-tx);white-space:nowrap}
+.vBadge.ok{background:var(--mint);color:var(--brand-d)}
+.vActs{display:flex;gap:8px;flex-wrap:wrap}
+.vActs .btn{flex:1;min-width:130px}
+#authForm{display:flex;flex-direction:column;gap:14px}
+#authVerify{display:flex;flex-direction:column;gap:14px}
+#authVerify .btn:disabled,.vActs .btn:disabled{opacity:.55;cursor:not-allowed}
+#authVerify>.link2{align-self:center}
+.acWho .vBadge{display:inline-block;margin-top:6px}
+.vBtn{margin-top:8px}
+
+/* Giảm bo góc: nút, thẻ, hộp… dùng góc nhỏ (4–8px); vòng tròn chỉ giữ cho chấm trạng thái và bước theo dõi đơn */
+:root{--btn-r:6px}
+.cfm{border-radius:8px}
+.acctCard,.ordCard,.ordEmpty{border-radius:8px}
+.acStats div,.ordStats div{border-radius:6px}
+.acField input,.codBox,.rideTip,.oCancel,.oInfo,.oIcon,.oLines .thumb{border-radius:6px}
+@media(max-width:760px){.ordCard{border-radius:8px}}
+.heroNav,.heroSound,.gps,.swap,.avatar,.cfmIcon{border-radius:var(--r2)}
+.heroDots button{border-radius:2px;width:18px;height:4px}
+.heroDots button.on{width:30px}
+
+
+/* ==========================================================================
+   [AI] v7: đăng nhập / tài khoản – bo góc vừa phải, phẳng, bớt "mẫu có sẵn"
+   Quy ước: ô nhập & nút 8px · thẻ 10px · hộp thoại 12px · không bóng đổ, không gradient, không viền màu một bên
+   ========================================================================== */
+#auth .aIn,#auth .cc,.acField input,.v{border-radius:8px}
+#auth .aIn{border:1px solid #c9ced4;background:#fff}
+#auth .aIn:focus,.acField input:focus{border-color:var(--brand);box-shadow:none;outline:1px solid var(--brand);outline-offset:0}
+#auth .btn,.acctCard .btn,.acMe .btn{border-radius:8px;box-shadow:none}
+#auth .btn:hover,.acctCard .btn:hover{transform:none;box-shadow:none}
+.acctCard{border-radius:10px;box-shadow:none;border-color:#dde1e5}
+.acMe{background:#fff}
+.avatar{background:var(--brand-d);border-radius:10px}
+.acMe .avatar{border-radius:12px;box-shadow:none}
+.avatar.sm{background:#fff;border-radius:6px}
+.acStats div{border-radius:8px;background:#f7f8f9;border-color:#e3e6e9}
+.vStep{border-radius:10px;border-color:#dde1e5}
+.vBadge{border-radius:6px}
+#auth .note,.acctCard .note{background:#f4f6f7;border-left:0;border-radius:8px;color:#454e58;padding:10px 12px}
+.cfm{border-radius:12px}
+.codBox,.rideTip,.oInfo,.oCancel{border-radius:8px}
+/* ==========================================================================
+   [AI] CẬP NHẬT v4: header điện thoại + menu dọc, ảnh đại diện tròn, hiệu ứng, bộ lọc món,
+   mã giảm giá cộng dồn, đặt xe (địa điểm đã lưu, hẹn giờ, tài xế, theo dõi, đánh giá).
+   Khối này nằm CUỐI file để ghi đè an toàn. Bo góc nhỏ (6px) cho đỡ "mềm" kiểu mặc định.
+   ========================================================================== */
+:root{--btn-r:6px;--r2:6px}
+body.noScroll{overflow:hidden}
+.ordCard{border-radius:8px}
+
+/* ---------- Ảnh đại diện tròn ---------- */
+.avatar{position:relative;overflow:hidden;border-radius:50%!important;background:var(--brand-d)!important;color:#fff!important}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.avatar.sm{width:36px;height:36px;font-size:15px}
+.avatar.drv{width:48px;height:48px;font-size:19px}
+.loginBtn.isUser{padding:0;width:44px;min-width:44px;height:44px;border-radius:50%;background:none!important;box-shadow:none!important;display:grid;place-items:center;transition:transform .18s}
+.loginBtn.isUser:hover{transform:scale(1.06)}
+.loginBtn.isUser .avatar{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--brand)}
+.loginBtn .uic{display:none}
+.menuBtn{display:none}
+
+/* ---------- Menu dọc (điện thoại) ---------- */
+#navWrap{position:fixed;inset:0;z-index:30;background:rgba(10,18,14,.5);opacity:0;transition:opacity .22s}
+#navWrap.on{opacity:1}
+#navDrawer{position:absolute;left:0;top:0;bottom:0;width:min(300px,86vw);background:#fff;display:flex;flex-direction:column;transform:translateX(-102%);transition:transform .24s cubic-bezier(.2,.8,.2,1);box-shadow:8px 0 30px rgba(0,0,0,.2)}
+#navWrap.on #navDrawer{transform:none}
+.navHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.navHead .dx{margin:0}
+.navUser{display:flex;align-items:center;gap:12px;padding:16px;background:var(--mint)}
+.navUser .avatar{width:46px;height:46px;font-size:19px;flex:none}
+.nuTxt{min-width:0;flex:1}.nuTxt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nuTxt small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.navList{display:flex;flex-direction:column;padding:8px 0;overflow:auto;flex:1}
+.navList button{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-weight:600;border-left:3px solid transparent;text-align:left}
+.navList button em{font-style:normal;font-weight:500;color:#1769d1;font-size:13.5px}
+.navList button:hover{background:var(--soft)}
+.navList button.active{border-left-color:var(--brand);background:#f1fbf6;color:var(--brand-d)}
+.navOut{margin:8px 16px 18px;padding:12px;border:1.5px solid #c8ccd1;border-radius:var(--btn-r);font-weight:700;text-align:center}
+
+/* ---------- Header điện thoại (<600px): thanh xanh lá, 1 hàng: menu – tìm kiếm – tài khoản – giỏ ---------- */
+@media(max-width:600px){
+  .top{position:sticky;top:0;background:var(--brand);box-shadow:0 2px 10px rgba(0,50,25,.3)}
+  html{scroll-padding-top:64px}
+  .bar{flex-wrap:nowrap;min-height:0;padding:8px 12px;gap:8px}
+  .bar .logo,.bar .seg,.bar .loc,.bar .textBtn{display:none}
+  .menuBtn{display:grid;place-items:center;width:40px;height:40px;flex:none;color:#fff;border-radius:var(--btn-r)}
+  .menuBtn:active{background:rgba(255,255,255,.16)}
+  .search{order:0;flex:1 1 auto;min-width:0;height:40px;border:0;border-radius:var(--btn-r);padding:0 10px}
+  .cartBtn{height:40px;min-width:44px;padding:0 10px;background:rgba(255,255,255,.16);color:#fff;flex:none}
+  .cartBtn:hover{background:rgba(255,255,255,.26)}
+  .cartBtn b{min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#fff;color:var(--brand-d);font-size:12px;line-height:20px;text-align:center}
+  .loginBtn{flex:none;height:40px;min-width:40px;padding:0;background:rgba(255,255,255,.16)!important;color:#fff;box-shadow:none!important;display:grid;place-items:center}
+  .loginBtn:not(.isUser) .lbl{display:none}
+  .loginBtn:not(.isUser) .uic{display:block}
+  .loginBtn.isUser{width:40px;height:40px;min-width:40px}
+  .loginBtn.isUser .avatar{width:34px;height:34px;box-shadow:0 0 0 2px #fff}
+}
+
+/* ---------- Hiệu ứng ---------- */
+@keyframes rvIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.rv:not(.in){opacity:0}
+.rv.in{animation:rvIn .55s cubic-bezier(.2,.7,.2,1) var(--d,0ms) backwards}
+.card{transition:box-shadow .25s,transform .25s}
+.card:hover{transform:translateY(-3px)}
+.card .pic img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.card:hover .pic img{transform:scale(1.06)}
+.fly{position:fixed;z-index:9999;width:56px;height:56px;border-radius:6px;background:var(--brand) center/cover no-repeat;box-shadow:0 10px 24px rgba(0,0,0,.35);pointer-events:none}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.18)}100%{transform:scale(1)}}
+.cartBtn.bump{animation:bump .4s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.heart.pop{animation:pop .35s ease}
+.heart{transition:color .15s,background .15s}
+@media(prefers-reduced-motion:reduce){.rv:not(.in){opacity:1}.rv.in{animation:none}.fly{display:none}}
+
+/* ---------- Vuốt ngang mượt ---------- */
+.rail,.quick{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scroll-padding-left:2px}
+.rail>*,.quick>*{scroll-snap-align:start}
+.rail.drag,.quick.drag{scroll-snap-type:none;scroll-behavior:auto;cursor:grabbing}
+.rail{cursor:grab}
+.chipRail{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding:2px 0 6px;margin:0 -2px}
+.chipRail::-webkit-scrollbar{display:none}
+
+/* ---------- Bộ lọc món ---------- */
+.fbar{display:grid;gap:14px;margin:0 0 22px}
+.fChip{flex:none;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border:1.5px solid #d5d9de;border-radius:6px;background:#fff;font-weight:600;font-size:14px;white-space:nowrap;scroll-snap-align:start;transition:background .15s,border-color .15s,color .15s,transform .15s}
+.fChip:hover{border-color:var(--brand);background:#f1fbf6}
+.fChip:active{transform:scale(.97)}
+.fChip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.fTools{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.pSeg{display:inline-flex;border:1.5px solid #d5d9de;border-radius:6px;overflow:hidden}
+.pSeg button{height:38px;padding:0 14px;font-weight:600;font-size:13.5px;color:#4b5563;border-right:1px solid #e3e6ea;transition:background .15s,color .15s}
+.pSeg button:last-child{border-right:0}
+.pSeg button:hover{background:var(--soft)}
+.pSeg button.on{background:var(--ink);color:#fff}
+.sortSel{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);margin-left:auto}
+.sortSel select{height:38px;padding:0 10px;border:1.5px solid #d5d9de;border-radius:6px;color:var(--ink);font-weight:600}
+.favToggle{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border:1.5px solid #d5d9de;border-radius:6px;font-weight:700;font-size:13.5px;transition:all .15s}
+.favToggle span{color:#b8bec6;transition:color .15s}
+.favToggle i{font-style:normal;min-width:20px;height:20px;border-radius:10px;background:var(--soft);font-size:12px;line-height:20px;text-align:center;padding:0 5px}
+.favToggle:hover{border-color:var(--red)}
+.favToggle.on{background:#fdecea;border-color:var(--red);color:#a1241a}
+.favToggle.on span{color:var(--red)}
+.favToggle.on i{background:#fff}
+@media(max-width:600px){
+  .fbar{margin-bottom:16px;gap:10px}
+  .fChip{height:38px;padding:0 13px}
+  .fTools{gap:8px}
+  .pSeg{flex:1 1 100%}.pSeg button{flex:1;padding:0 6px}
+  .sortSel{margin-left:0;flex:1}.sortSel span{display:none}.sortSel select{width:100%}
+  .favToggle{flex:none}
+  .chipRail{margin:0 -16px;padding:2px 16px 6px}
+}
+
+/* ---------- Mã giảm giá ---------- */
+.vApplied{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.vTag{display:inline-flex;align-items:center;gap:6px;padding:5px 4px 5px 10px;border:1px solid #bfe3cf;background:#effaf4;border-radius:6px;font-size:12.5px;color:#14532d}
+.vTag i{font-style:normal;color:#3f6b52}
+.vTag button{width:22px;height:22px;border-radius:4px;color:#3f6b52;display:grid;place-items:center}
+.vTag button:hover{background:#d6f0e1}
+.vSug{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+.vSug button{padding:4px 10px;border:1px dashed var(--brand);border-radius:6px;color:var(--brand-d);font-weight:700;background:#fff}
+.vSug button:hover{background:#effaf4}
+
+/* ---------- Đặt xe: địa điểm đã lưu + hẹn giờ ---------- */
+.miniLbl{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.placeRow{margin-top:12px}
+.placeChips{display:flex;flex-wrap:wrap;gap:8px}
+.pl{display:inline-flex;align-items:center;border:1.5px solid #d5d9de;border-radius:6px;background:#fff;font-size:13.5px;transition:border-color .15s,background .15s}
+.pl:hover{border-color:var(--brand)}
+.pl button,.pl.add{display:inline-flex;align-items:center;gap:6px;padding:7px 10px}
+.pl.add{color:var(--muted);border-style:dashed}
+.pl.add b{color:var(--brand)}
+.pl.saved>button:first-child{max-width:100%}
+.pl small{color:var(--muted);font-size:12px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .plx{padding:7px 8px;color:#9aa3ad;border-left:1px solid #e3e6ea}.pl .plx:hover{color:var(--red)}
+.when{margin-top:14px}
+.whenTabs{display:inline-flex;border:1.5px solid #d5d9de;border-radius:6px;overflow:hidden}
+.whenTabs button{padding:8px 18px;font-weight:700;font-size:14px;color:#4b5563;transition:background .15s,color .15s}
+.whenTabs button.on{background:var(--ink);color:#fff}
+.whenPick{margin-top:10px;display:grid;gap:8px}
+.whenQuick{display:flex;flex-wrap:wrap;gap:6px}
+.whenQuick button{padding:6px 12px;border:1px solid #d5d9de;border-radius:6px;font-size:13px;font-weight:600}
+.whenQuick button:hover{border-color:var(--brand);background:#f1fbf6}
+.whenPick input{max-width:260px}
+.whenNote{font-size:13px;color:var(--muted)}
+
+/* ---------- Thẻ tài xế, ETA, đánh giá ---------- */
+.tag.sch{background:#e8f0fe;color:#1a56b8}
+.etaLine{margin:0;padding:10px 12px;background:#f1fbf6;border-left:3px solid var(--brand);font-weight:600;font-size:14px;color:#14532d;border-radius:0 6px 6px 0}
+.drvCard{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fafbfb}
+.drvTxt{flex:1;min-width:0}.drvTxt b{display:block}
+.drvTxt small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4}
+.plate{display:inline-block;padding:0 6px;border:1.5px solid #1d2228;border-radius:3px;font-weight:800;font-size:12px;color:var(--ink);background:#fff;letter-spacing:.03em}
+.drvCall{width:40px;height:40px;border-radius:50%;background:var(--mint);display:grid;place-items:center;flex:none;font-size:17px;transition:transform .15s}
+.drvCall:hover{transform:scale(1.08)}
+.rate,.rated{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:8px;background:#fffdf5}
+.rated small{color:var(--muted)}
+.stars{display:flex;gap:2px}
+.stars button{font-size:30px;line-height:1;color:#d3d7dc;padding:2px;transition:transform .12s,color .12s}
+.stars button:hover{transform:scale(1.15)}
+.stars button.on,.stars.on{color:#f5a623}
+.stars.on{font-size:22px;letter-spacing:2px}
+.rtags{display:flex;flex-wrap:wrap;gap:6px}
+.rtags button{padding:6px 12px;border:1px solid #d5d9de;border-radius:6px;font-size:13px;background:#fff}
+.rtags button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.rate textarea{width:100%;padding:10px 12px;border:1px solid #c8ccd1;border-radius:6px;font:inherit;resize:vertical}
+
+/* ---------- Theo dõi chuyến xe ---------- */
+#trackWrap{position:fixed;inset:0;z-index:25;background:rgba(10,18,14,.55);display:grid;place-items:center;padding:16px}
+#track{width:min(920px,100%);max-height:calc(100vh - 32px);background:#fff;border-radius:8px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);grid-template-rows:auto 1fr;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.tkHead{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.tkHead b{display:block}.tkHead small{color:var(--brand-d);font-weight:600}
+.tkHead .dx{margin:0}
+.tkMap{position:relative;min-height:420px;isolation:isolate}
+#trackMap{position:absolute;inset:0;z-index:0}
+.tkEta{position:absolute;left:12px;right:12px;bottom:12px;z-index:500;background:#fff;padding:12px 14px;border-radius:8px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);border-left:4px solid var(--brand)}
+.tkInfo{padding:16px;display:grid;gap:14px;align-content:start;overflow:auto}
+.tkSteps{margin:0}
+.drvIcon{background:none;border:0}
+.drvDot{position:relative;width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid var(--brand);display:grid;place-items:center;font-size:22px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.drvDot::before{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(0,122,59,.45);animation:ping 1.6s ease-out infinite}
+@keyframes ping{from{transform:scale(.7);opacity:1}to{transform:scale(1.25);opacity:0}}
+@media(max-width:760px){
+  #trackWrap{padding:0;place-items:stretch}
+  #track{width:100%;max-height:none;height:100%;border-radius:0;grid-template-columns:1fr;grid-template-rows:auto minmax(260px,46vh) 1fr}
+  .tkMap{min-height:0}
+}
+
+
+/* ---- Lời mời làm tài xế (trang chủ) + liên kết menu ---- */
+.navList a.navLinkA{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-weight:600;border-left:3px solid transparent}
+.navList a.navLinkA::after{content:"↗";color:var(--brand);font-weight:700}
+.navList a.navLinkA:hover{background:var(--soft)}
+.drvBanner{display:grid;grid-template-columns:1.1fr .9fr;margin:56px 0 44px;background:#06331d;color:#fff;border-radius:6px;overflow:hidden;min-height:300px}
+.dbTxt{padding:40px 44px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.dbTag{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6fe3a3}
+.dbTxt h2{font-size:clamp(24px,3vw,34px);line-height:1.12;font-weight:800;letter-spacing:-.8px}
+.dbTxt p{font-size:15.5px;line-height:1.55;color:#cfe8da;max-width:470px}
+.dbPoints{display:grid;gap:6px;margin:4px 0 6px}
+.dbPoints li{position:relative;padding-left:22px;font-size:14.5px;color:#e6f6ec}
+.dbPoints li::before{content:"";position:absolute;left:2px;top:6px;width:10px;height:6px;border-left:2px solid #6fe3a3;border-bottom:2px solid #6fe3a3;transform:rotate(-45deg)}
+.dbActs{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:6px}
+.dbActs .btn{background:#fff;color:#06331d;font-weight:700;height:46px;padding:0 22px;display:inline-flex;align-items:center}
+.dbActs .btn:hover{background:#e8fff1}
+.dbLink{color:#fff;font-weight:600;border-bottom:2px solid rgba(255,255,255,.4);padding-bottom:1px}
+.dbLink:hover{border-color:#fff}
+.dbFine{font-size:12px;color:#8fb9a2}
+.dbArt{position:relative;background:#0a4a2a;display:grid;place-items:center;overflow:hidden}
+.dbArt::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 40px)}
+.dbArt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.dbRoute{position:relative;width:min(100%,420px);padding:20px}
+@media(max-width:760px){
+  .drvBanner{grid-template-columns:1fr;margin:40px 0 30px}
+  .dbTxt{padding:28px 22px}
+  .dbArt{min-height:170px;order:-1}
+}
+
+.drvBanner :where(h2,p,ul){margin:0;padding:0}
+.drvBanner .dbTxt h2{color:#fff}
+.drvBanner .dbTxt p{color:#cfe8da}
+.drvBanner .dbActs .btn{background:#fff!important;color:#06331d!important;box-shadow:none}
+.drvBanner .dbActs .btn:hover{background:#e8fff1!important}
+
+/* ===== Thẻ món: nút giỏ hàng dạng icon + trang chi tiết ===== */
+.card .pic[data-act="detail"],.card .nm[data-act="detail"],.clk{cursor:pointer}
+.card .nm[data-act="detail"]:hover{color:var(--brand)}
+.card .pic:focus-visible,.clk:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.cardFoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px}
+.cardFoot .price{margin:0}
+.cartIco{display:inline-grid;place-items:center;width:38px;height:38px;flex:none;border-radius:var(--btn-r,8px);background:var(--brand);color:#fff;border:0;cursor:pointer;transition:background .15s,transform .15s}
+.cartIco:hover{background:var(--brand-d)}
+.cartIco:active{transform:scale(.94)}
+.cartIco.sm{width:34px;height:34px}
+.cartIco.sm svg{width:18px;height:18px}
+.cartIco.big{width:52px;height:52px;background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+.cartIco.big:hover{background:var(--mint)}
+.cartIco.big svg{width:24px;height:24px}
+.menuRow .clk{display:block;flex:none}
+
+.box.mDetail{width:min(480px,100%);padding:0;overflow:auto}
+.mDetail .x{z-index:2;background:rgba(255,255,255,.92);border-radius:50%;width:34px;height:34px;top:10px;right:10px}
+.mDetail #modalBody{display:block}
+.dtPic{height:240px}
+.dtPic .dtImg{display:block;position:relative;width:100%;height:100%;background:var(--ph);overflow:hidden}
+.dtPic .dtImg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dtPic .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:72px}
+.mDetail h2,.mDetail .dtMeta,.mDetail .dtDesc,.mDetail .dtStore,.mDetail .dtRow,.mDetail .dtActs{margin-left:22px;margin-right:22px}
+.mDetail h2{margin-top:18px;margin-bottom:4px}
+.dtMeta{margin-top:0;margin-bottom:8px;color:var(--muted);font-size:14px}
+.dtStar{color:#d97706;font-weight:700}
+.dtDesc{margin-top:0;margin-bottom:14px;line-height:1.55;color:#38414a}
+.dtStore{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--soft);border-radius:10px;font-size:14px;margin-bottom:14px}
+.dtStore small{display:block;color:var(--muted);margin-top:2px}
+.dtRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.dtPrice{font-size:24px;color:var(--brand);letter-spacing:-.02em}
+.dtActs{display:flex;gap:10px;align-items:center;padding-bottom:22px}
+.dtBuy{flex:1;height:52px;font-size:16px}
+
+/* ===== Bản đồ xác nhận địa chỉ giao hàng ===== */
+.addrBox{margin:4px 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafcfb}
+.addrHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:14px}
+.addrMapWrap{position:relative;isolation:isolate}
+.addrMap{height:200px;border-radius:10px;border:1px solid var(--line);background:var(--ph);z-index:0}
+.addrRes{margin:8px 0 0;font-size:13.5px;line-height:1.4;color:#7a4b00;min-height:0}
+.addrRes.ok{color:var(--brand);font-weight:600}
+.addrRes:empty{display:none}
+.addrHint{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.45}
+
+/* ===== Trang tài khoản (giao diện mới) ===== */
+.acTitle{margin-bottom:18px}
+.acctGrid{gap:20px 24px}
+.acCol{display:grid;gap:20px;align-content:start;min-width:0}
+.acctCard{border:1px solid #e3e8ea;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,28,.04),0 10px 28px -20px rgba(16,40,28,.35);padding:22px}
+.acHead{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.acHead h3{margin:0;font-size:17px;flex:1}
+.acIco{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--mint);flex:none}
+.acIco svg{width:19px;height:19px;stroke:var(--brand);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.acSub{margin:-8px 0 14px;font-size:13.5px;color:var(--muted)}
+.acLink{background:none;border:0;padding:4px 2px;color:var(--brand);font-weight:600;font-size:13.5px;cursor:pointer}
+.acLink:hover{text-decoration:underline}
+.acctCard .acField{display:grid;gap:6px;margin-bottom:14px;font-size:13px;font-weight:600;color:#3a444e}
+.acctCard .acField input{height:44px;border:1px solid #cfd6da;border-radius:9px;padding:0 13px;font-size:15px;font-weight:400;background:#fff;color:var(--ink);width:100%;transition:border-color .15s,box-shadow .15s}
+.acctCard .acField input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,122,59,.16)}
+.acctCard .acField input:disabled{background:#f3f5f6;color:#76808a}
+.acctCard>.btn,.acctCard .btn:not(.ghost):not(.vBtn){border-radius:9px}
+.acctCard.off{opacity:.65}
+
+/* banner hồ sơ */
+.acMe{display:block;padding:0;overflow:hidden;background:#fff}
+.acBanner{height:104px;background:
+  radial-gradient(circle at 85% -20%,rgba(255,255,255,.22) 0 120px,transparent 121px),
+  radial-gradient(circle at 10% 130%,rgba(255,255,255,.14) 0 90px,transparent 91px),
+  linear-gradient(120deg,#005a2c,#0a9a50)}
+.acProfile{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding:0 24px;margin-top:-38px}
+.acMe .avatar{width:88px;height:88px;font-size:36px;border:4px solid #fff;box-shadow:0 8px 22px -10px rgba(0,60,30,.55);border-radius:50%!important}
+.acMe .acWho{flex:1 1 220px;padding-bottom:4px}
+.acMe .acWho h3{font-size:23px;margin:0 0 2px;letter-spacing:-.02em}
+.acMe .acWho p{margin:0 0 6px;color:var(--muted);font-size:14.5px;overflow:hidden;text-overflow:ellipsis}
+.acMe .acts{display:flex;gap:10px;padding-bottom:6px;flex-wrap:wrap}
+.acMe .vBadge{display:inline-block;padding:3px 10px;border-radius:999px}
+.acStats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px 24px 24px}
+.acStats div{display:grid;grid-template-columns:42px 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;padding:14px 16px;border:1px solid #e6ebed;border-radius:12px;background:#fafcfb;min-width:0}
+.acStats i{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--mint)}
+.acStats i svg{width:21px;height:21px;stroke:var(--brand);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.acStats b{font-size:19px;letter-spacing:-.02em;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acStats span{font-size:12.5px;color:var(--muted)}
+
+/* đơn gần đây */
+.acRecent{display:grid;gap:10px}
+.acOrd{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;border:1px solid #e6ebed;border-radius:12px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.acOrd:hover{border-color:var(--brand);background:#f6fbf8}
+.acOrdIc{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:var(--mint);font-size:21px;flex:none}
+.acOrdMain{display:grid;min-width:0;flex:1}
+.acOrdMain b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acOrdMain small{color:var(--muted);font-size:12.5px}
+.acOrdR{display:grid;justify-items:end;gap:4px;flex:none}
+.acOrdR b{font-size:14.5px}
+.st{font-style:normal;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.st.go{background:#fff4dc;color:#8a5a00}.st.ok{background:var(--mint);color:var(--brand-d)}.st.x{background:#fdecea;color:#b3261e}
+.acEmpty{padding:22px 10px;text-align:center;color:var(--muted);font-size:14.5px}
+
+@media(max-width:700px){
+  .acStats{grid-template-columns:1fr;padding:16px}
+  .acProfile{padding:0 16px}.acMe .avatar{width:76px;height:76px;font-size:31px}
+  .acMe .acts{width:100%}.acMe .acts .btn{flex:1}
+  .acctCard{padding:18px}
+}
+/* Ẩn form đặt xe cũ khi dùng giao diện 4 bước */
+#ride #rideMapUI,
+#ride #rideLegacy { display: none !important; }
+
+/* 1. Ẩn giao diện đặt xe cũ bên trong tab #ride để không bị đè dưới #rideFlow */
+#ride > .rideBack,
+#ride > h2,
+#ride > .sub,
+#ride .ridePanel {
+  display: none !important;
+}
+
+/* 2. Khung chính #rideFlow mặc định cho bước 1 (home) và bước 2 (search) */
+#rideFlow {
+  position: relative;
+  z-index: 20;
+  min-height: calc(100vh - 64px);
+  background: #fff;
+}
+
+/* 3. Khi sang bước 3 (pin) hoặc bước 4 (quote): làm trong suốt #rideFlow để lộ bản đồ bên dưới */
+#ride.is-map-mode #rideFlow {
+  background: transparent;
+  pointer-events: none; /* Cho phép kéo/zoom bản đồ xuyên qua vùng trống */
+}
+
+/* Cho phép bấm vào các thanh công cụ & bottom sheet ở bước 3 và 4 */
+#ride.is-map-mode .gfTopBar,
+#ride.is-map-mode .gfQuoteTop,
+#ride.is-map-mode .gfSheet,
+#ride.is-map-mode .gfQuoteSheet {
+  pointer-events: auto;
+}
+
+/* 4. Đưa bản đồ #mapCol làm nền cố định toàn màn hình ở bước 3 và 4 */
+#ride .rideLayout {
+  display: block;
+}
+
+#ride #mapCol {
+  display: none;
+}
+
+#ride.is-map-mode #mapCol {
+  display: block;
+  position: fixed;
+  top: 64px; /* Chiều cao header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  border-radius: 0;
+  border: none;
+}
+
+#ride.is-map-mode #map {
+  height: 100% !important;
+}
+/* ================= LUỒNG ĐẶT XE 4 BƯỚC (.gf*) ================= */
+#rideFlowBox {
+  position: relative;
+  min-height: calc(100vh - 110px);
+  background: #f6f8f7;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#rideFlowBox.isMap {
+  height: calc(100vh - 96px);
+}
+
+/* Bước 1: Home Đặt xe */
+.gfHomeWrap { display: flex; flex-direction: column; gap: 14px; padding-bottom: 24px; }
+.gfHomeHero {
+  background: linear-gradient(135deg, #00b14f 0%, #008f3f 100%);
+  color: #fff;
+  padding: 18px 16px 26px;
+  border-radius: 0 0 22px 22px;
+  position: relative;
+}
+.gfHomeBack {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.gfHomeTitle { font-size: 22px; font-weight: 800; }
+.gfHomeSub { font-size: 13px; opacity: 0.92; margin-top: 2px; }
+.gfHomeSearchBar {
+  margin-top: 16px;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  cursor: pointer;
+}
+.gfHomePlaceholder { flex: 1; font-weight: 600; font-size: 14px; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gfNowChip {
+  background: #eefaf3;
+  color: #008f3f;
+  border: 1px solid #bfead1;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gfHomeBody { padding: 0 14px; display: flex; flex-direction: column; gap: 14px; }
+.gfQuickRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gfQuickCard {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.gfQuickCard:hover { border-color: #00b14f; }
+.gfQuickIco { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.gfQuickTitle { font-size: 13.5px; font-weight: 700; color: #111827; }
+.gfQuickSub { font-size: 11.5px; color: #6b7280; margin-top: 2px; }
+.gfSecHead { font-size: 13px; font-weight: 700; color: #4b5563; margin-top: 4px; }
+.gfHomeList { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; overflow: hidden; }
+.gfHomeItem { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+.gfHomeItem:last-child { border-bottom: none; }
+.gfHomeItem:hover { background: #f9fafb; }
+
+/* Bước 2: Tìm kiếm điểm đón/đến */
+.gfSrchTop { background: #fff; padding: 12px 14px 0; border-bottom: 1px solid #e5e7eb; }
+.gfSrchRow1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.gfBack { background: #f3f4f6; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+.gfModeSeg { display: inline-flex; background: #f3f4f6; padding: 3px; border-radius: 999px; gap: 2px; }
+.gfSegBtn { border: none; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #4b5563; cursor: pointer; }
+.gfSegBtn.active { background: #00b14f; color: #fff; }
+.gfSchedBar { display: flex; align-items: center; gap: 8px; background: #eefaf3; padding: 8px 10px; border-radius: 10px; margin-bottom: 10px; font-size: 12.5px; color: #065f46; }
+.gfSchedIn { flex: 1; border: 1px solid #a7f3d0; border-radius: 8px; padding: 4px 8px; font-size: 12.5px; }
+
+.gfInputsWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+.gfLineConn { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.gfDotOrig { width: 10px; height: 10px; border-radius: 50%; background: #2563eb; border: 2px solid #dbeafe; flex-shrink: 0; }
+.gfVLine { width: 2px; height: 22px; background: #d1d5db; }
+.gfDotDest { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; border: 2px solid #fee2e2; flex-shrink: 0; }
+.gfInputCol { flex: 1; display: flex; flex-direction: column; }
+.gfInRow { display: flex; align-items: center; padding: 4px 6px; border-radius: 8px; }
+.gfInRow.isFocus { background: #fff; box-shadow: 0 0 0 1.5px #00b14f; }
+.gfIn { flex: 1; border: none; background: transparent; outline: none; font-size: 13.5px; color: #111827; padding: 4px 0; }
+.gfInDivider { height: 1px; background: #e5e7eb; margin: 4px 0; }
+.gfClrBtn { border: none; background: #e5e7eb; color: #4b5563; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; cursor: pointer; }
+.gfSwapBtn { border: 1px solid #e5e7eb; background: #fff; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 15px; }
+
+.gfSubTabs { display: flex; gap: 16px; margin-top: 10px; }
+.gfSubTab { border: none; background: transparent; padding: 8px 2px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
+.gfSubTab.active { color: #00b14f; border-bottom-color: #00b14f; }
+
+.gfSugList { flex: 1; overflow-y: auto; background: #fff; padding-bottom: 68px; }
+.gfSugRow { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+.gfSugRow:hover { background: #f9fafb; }
+.gfPinDark { width: 32px; height: 32px; border-radius: 50%; background: #f3f4f6; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+.gfSugTxt { flex: 1; min-width: 0; }
+.gfSugName { font-size: 13.5px; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gfSugAddr { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.gfSugDist { font-size: 12px; color: #6b7280; font-weight: 600; }
+.gfEmptySug { padding: 28px 16px; text-align: center; color: #6b7280; font-size: 13px; }
+
+.gfFloatMapWrap { position: sticky; bottom: 12px; display: flex; justify-content: center; pointer-events: none; padding: 8px; }
+.gfFloatMapBtn {
+  pointer-events: auto;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+/* Bước 3 & 4: Ghim bản đồ & Báo giá */
+.gfPinTopBar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gfBackCircle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.gfPinBadge, .gfRoutePill {
+  background: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 48px);
+  cursor: pointer;
+}
+.gfRouteTxt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+.gfMapViewport { flex: 1; min-height: 240px; width: 100%; background: #e5e7eb; }
+.gfMapQuote { min-height: 200px; }
+
+.gfPinSheet, .gfQuoteSheet {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 10px 16px 18px;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gfSheetHandle { width: 38px; height: 4px; border-radius: 999px; background: #d1d5db; margin: 0 auto 2px; }
+.gfPinTitle { font-size: 15px; font-weight: 800; color: #111827; }
+.gfPinCard { display: flex; align-items: center; gap: 12px; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 12px; }
+
+.gfQuoteMeta { display: flex; justify-content: space-between; font-size: 12.5px; color: #4b5563; }
+.gfSvcList { display: flex; flex-direction: column; gap: 8px; max-height: 190px; overflow-y: auto; }
+.gfSvcRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.gfSvcRow.active { border-color: #00b14f; background: #f0fdf4; }
+.gfSvcIco { font-size: 24px; }
+.gfSvcInfo { flex: 1; }
+.gfSvcName { font-size: 14px; font-weight: 700; color: #111827; }
+.gfSvcEta { font-size: 12px; font-weight: 500; color: #059669; }
+.gfSvcDesc { font-size: 12px; color: #6b7280; }
+.gfSvcPrice { font-size: 14.5px; font-weight: 800; color: #111827; }
+
+.gfPayRow { display: flex; gap: 8px; }
+.gfPaySel, .gfPromoIn { flex: 1; border: 1px solid #d1d5db; border-radius: 10px; padding: 8px 10px; font-size: 13px; background: #fff; }
+.gfPrimaryBtn {
+  width: 100%;
+  background: #00b14f;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.gfPrimaryBtn:hover { background: #009944; }
+/* ================== TỐI ƯU GIAO DIỆN TOÀN TRANG & TRANG CHI TIẾT SẢN PHẨM ================== */
+
+/* 1. Làm sáng & thoáng giao diện chung */
+body {
+  background: #f5f7f6 !important;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1180px !important;
+  margin: 0 auto;
+  padding-top: 18px;
+  padding-bottom: 40px;
+}
+
+/* Làm các thẻ sản phẩm ngoài trang chủ rõ nét, có chiều sâu & dễ bấm vào xem chi tiết */
+#food .card, #food .foodCard, #food .itemCard {
+  background: #ffffff;
+  border: 1px solid #e5e9e7;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+#food .card:hover, #food .foodCard:hover, #food .itemCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(16, 24, 40, 0.08);
+  border-color: #00b14f;
+}
+#food .card img, #food .foodCard img, #food .itemCard img {
+  cursor: pointer;
+  transition: transform 0.35s ease;
+}
+#food .card:hover img, #food .foodCard:hover img {
+  transform: scale(1.03);
+}
+#food .card h3, #food .card .title, #food .foodCard .name {
+  cursor: pointer;
+}
+#food .card h3:hover, #food .card .title:hover, #food .foodCard .name:hover {
+  color: #00a84f;
+}
+
+/* Sửa lỗi mượt mà cho khung Carousel */
+.carousel, .bannerWrap, .heroSlider {
+  overflow: hidden !important;
+  border-radius: 18px;
+}
+.carouselTrack, .bannerTrack, .heroTrack {
+  display: flex !important;
+  will-change: transform;
+}
+.carouselTrack > *, .bannerTrack > *, .heroTrack > * {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+}
+
+/* 2. Trang Chi tiết sản phẩm riêng (#productDetailPage) */
+.gnDetailPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.gnDetailPage[hidden] {
+  display: none !important;
+}
+
+.gnDetTopNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.gnDetBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.gnDetBackBtn:hover {
+  border-color: #00b14f;
+  color: #00a84f;
+  background: #f0fdf4;
+}
+.gnDetBreadcrumb {
+  font-size: 13px;
+  color: #6b7280;
+}
+.gnDetBreadcrumb b {
+  color: #111827;
+}
+
+/* Hàng ngang trên cùng: Ảnh bên trái + Tên & thông tin bên phải */
+.gnDetHeroCard {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  gap: 28px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.05);
+  align-items: center;
+}
+.gnDetImgCol {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #f3f4f6;
+}
+.gnDetMainImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gnDetBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #00b14f;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(0, 177, 79, 0.3);
+}
+
+.gnDetInfoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gnDetShopTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #008f3f;
+  background: #ecfdf3;
+  padding: 5px 12px;
+  border-radius: 999px;
+  width: fit-content;
+}
+.gnDetTitle {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  line-height: 1.25;
+}
+.gnDetMetaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #4b5563;
+}
+.gnDetStar {
+  font-weight: 700;
+  color: #d97706;
+}
+.gnDetFast {
+  color: #059669;
+  font-weight: 600;
+}
+.gnDetDesc {
+  font-size: 14.5px;
+  color: #4b5563;
+  margin: 2px 0;
+  line-height: 1.6;
+}
+
+.gnDetPriceBox {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  background: #f8faf9;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px dashed #cbd5e1;
+}
+.gnDetPrice {
+  font-size: 26px;
+  font-weight: 800;
+  color: #00a84f;
+}
+.gnDetOldPrice {
+  font-size: 15px;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+.gnDetSaveTag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.gnDetNoteBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gnDetNoteBox label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+.gnDetNoteBox input {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  outline: none;
+}
+.gnDetNoteBox input:focus {
+  border-color: #00b14f;
+  box-shadow: 0 0 0 3px rgba(0, 177, 79, 0.12);
+}
+
+.gnDetActionRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+.gnQtyControl {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+.gnQtyControl button {
+  width: 40px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+}
+.gnQtyControl button:hover {
+  background: #f3f4f6;
+}
+.gnQtyControl span {
+  min-width: 36px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 15px;
+}
+.gnDetAddBtn {
+  flex: 1;
+  height: 46px;
+  background: #00b14f;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 177, 79, 0.25);
+  transition: background 0.18s ease, transform 0.15s ease;
+}
+.gnDetAddBtn:hover {
+  background: #009643;
+  transform: translateY(-1px);
+}
+
+/* Các khối Section bên dưới: Ưu đãi hôm nay & Gợi ý dành cho bạn */
+.gnDetSection {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 20px 22px;
+}
+.gnDetSecHeader {
+  margin-bottom: 16px;
+}
+.gnDetSecTitle {
+  font-size: 19px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+.gnDetSecSub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+/* Grid Ưu đãi hôm nay */
+.gnPromoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.gnPromoCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border: 1.5px dashed #34d399;
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.gnPromoCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.12);
+}
+.gnPromoTag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #065f46;
+  background: #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.gnPromoTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.gnPromoSub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.gnPromoRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.gnPromoCode {
+  font-family: monospace;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #047857;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.gnPromoCopyBtn {
+  background: #00b14f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Grid Gợi ý dành cho bạn */
+.gnSugGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.gnSugCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.gnSugCard:hover {
+  transform: translateY(-3px);
+  border-color: #00b14f;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.07);
+}
+.gnSugImgWrap {
+  aspect-ratio: 16 / 11;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+.gnSugImgWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gnSugBody {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.gnSugName {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111827;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gnSugShop {
+  font-size: 12px;
+  color: #6b7280;
+}
+.gnSugFoot {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gnSugPrice {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #00a84f;
+}
+.gnSugViewBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Responsive trên điện thoại / máy tính bảng */
+@media (max-width: 960px) {
+  .gnDetHeroCard { grid-template-columns: 1fr; }
+  .gnPromoGrid { grid-template-columns: 1fr; }
+  .gnSugGrid { grid-template-columns: repeat(2, 1fr); }
+}
+/* Dọn sạch các lớp phủ/pseudo-element gây hình chữ nhật dính trên carousel */
+.carousel::before, .carousel::after,
+.bannerWrap::before, .bannerWrap::after,
+.heroSlider::before, .heroSlider::after,
+.carouselTrack::before, .carouselTrack::after {
+  display: none !important;
+  content: none !important;
+}
+.carouselTrack > *, .bannerTrack > *, .heroTrack > * {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+/* ================== GIAO DIỆN ĐẶT XE CHUẨN GRAB & POP-UP ĐẸP ================== */
+.grbWrap {
+  background: #f5f7f6;
+  min-height: calc(100vh - 110px);
+  border-radius: 20px;
+  overflow: hidden;
+  padding-bottom: 28px;
+}
+
+.grbHero {
+  background: linear-gradient(135deg, #00b14f 0%, #008a3e 100%);
+  padding: 18px 20px 26px;
+  border-radius: 0 0 26px 26px;
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 177, 79, 0.18);
+}
+.grbHeroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.grbIconBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.grbGpsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(6px);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  max-width: calc(100% - 52px);
+}
+.grbPulseDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.3);
+  flex-shrink: 0;
+}
+.grbGpsText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+.grbGpsAction {
+  background: #ffffff;
+  color: #008a3e;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.grbHeroText {
+  margin: 16px 0 14px;
+}
+.grbHeroTitle {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+}
+.grbHeroSub {
+  font-size: 13.5px;
+  opacity: 0.92;
+  margin: 4px 0 0;
+}
+
+/* Thẻ tìm kiếm nổi */
+.grbSearchCard {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+  color: #111827;
+}
+.grbSearchMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f3f4f6;
+  padding: 11px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.grbPinRed {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px #fee2e2;
+  flex-shrink: 0;
+}
+.grbDotBlue {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 3px #dbeafe;
+  flex-shrink: 0;
+}
+.grbDotRed {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px #fee2e2;
+  flex-shrink: 0;
+}
+.grbSearchPlaceholder {
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grbTimeChip {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+}
+.grbSavedChips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-top: 10px;
+  padding-bottom: 2px;
+}
+.grbChipItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.grbChipItem:hover {
+  border-color: #00b14f;
+  background: #f0fdf4;
+}
+.grbChipGps {
+  background: #ecfdf3;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.grbBody {
+  padding: 18px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.grbServiceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.grbSvcCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.grbSvcCard:hover {
+  transform: translateY(-2px);
+  border-color: #00b14f;
+}
+.grbSvcIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.grbSvcCardTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #111827;
+}
+.grbSvcCardSub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.grbSecTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #374151;
+}
+.grbPlaceList, .grbSugList {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+.grbPlaceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+}
+.grbPlaceRow:last-child {
+  border-bottom: none;
+}
+.grbPlaceRow:hover {
+  background: #f9fafb;
+}
+.grbPlaceIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.grbPlaceInfo {
+  flex: 1;
+  min-width: 0;
+}
+.grbPlaceName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grbPlaceAddr {
+  font-size: 12.5px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.grbArrow {
+  color: #9ca3af;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Bước 2: Tìm kiếm lộ trình & GPS banner */
+.grbSrchHeader {
+  background: #ffffff;
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.grbSrchTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.grbBackBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  font-size: 18px;
+  cursor: pointer;
+}
+.grbSrchHeading {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+.grbModeSeg {
+  display: inline-flex;
+  background: #f3f4f6;
+  padding: 3px;
+  border-radius: 999px;
+}
+.grbSegBtn {
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  cursor: pointer;
+}
+.grbSegBtn.active {
+  background: #00b14f;
+  color: #ffffff;
+}
+.grbSchedBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ecfdf3;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #065f46;
+}
+.grbSchedIn {
+  flex: 1;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.grbRouteBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 8px 12px;
+}
+.grbRouteLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.grbLineDash {
+  width: 2px;
+  height: 24px;
+  background: #cbd5e1;
+}
+.grbRouteInputs {
+  flex: 1;
+}
+.grbInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 10px;
+}
+.grbInputWrap.isFocus {
+  background: #ffffff;
+  box-shadow: 0 0 0 1.5px #00b14f;
+}
+.grbInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+  min-width: 0;
+}
+.grbGpsMiniBtn {
+  background: #ecfdf3;
+  color: #008a3e;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.grbGpsMiniBtn:hover {
+  background: #d1fae5;
+}
+.grbClrBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 11px;
+  place-items: center;
+  cursor: pointer;
+}
+.grbInputSep {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+.grbSwapBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.grbCurrentLocBanner {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #ecfdf3 0%, #f0fdf4 100%);
+  border: 1px solid #86efac;
+  border-radius: 14px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+.grbCurrentLocBanner:hover {
+  background: #dcfce7;
+}
+.grbLocRadar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #00b14f;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.grbLocText {
+  flex: 1;
+}
+.grbLocTitle {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #065f46;
+}
+.grbLocSub {
+  font-size: 12px;
+  color: #047857;
+}
+.grbLocAction {
+  font-size: 13px;
+  font-weight: 800;
+  color: #00a84f;
+}
+
+.grbTabs {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+}
+.grbTab {
+  border: none;
+  background: transparent;
+  padding: 9px 2px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #6b7280;
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer;
+}
+.grbTab.active {
+  color: #00b14f;
+  border-bottom-color: #00b14f;
+}
+.grbEmpty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13.5px;
+}
+.grbFloatBar {
+  position: sticky;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  pointer-events: none;
+}
+.grbMapBtn {
+  pointer-events: auto;
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+
+/* Bước 3 & 4: Bản đồ & Báo giá */
+.grbMapTopBar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.grbCircleBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.grbMapPill, .grbRouteSummaryPill {
+  background: #ffffff;
+  padding: 9px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.grbEllipsis {
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grbMapArea {
+  flex: 1;
+  min-height: 260px;
+  width: 100%;
+  background: #e5e7eb;
+}
+.grbMapQuote {
+  min-height: 220px;
+}
+.grbBottomSheet {
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  padding: 10px 18px 20px;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.12);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.grbHandle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: #d1d5db;
+  margin: 0 auto;
+}
+.grbSheetTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+.grbPinSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+.grbQuoteTopInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #4b5563;
+}
+.grbTimeBadge {
+  background: #ecfdf3;
+  color: #047857;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.grbVehicleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.grbVehCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.grbVehCard.active {
+  border-color: #00b14f;
+  background: #f0fdf4;
+}
+.grbVehIcon {
+  font-size: 26px;
+}
+.grbVehBody {
+  flex: 1;
+}
+.grbVehName {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #111827;
+}
+.grbVehEta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+}
+.grbVehDesc {
+  font-size: 12px;
+  color: #6b7280;
+}
+.grbVehPrice {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+.grbPayStrip {
+  display: flex;
+  gap: 10px;
+}
+.grbSelect, .grbPromoInput {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 13px;
+  background: #ffffff;
+}
+.grbPrimaryBtn {
+  width: 100%;
+  background: #00b14f;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 177, 79, 0.28);
+}
+.grbPrimaryBtn:hover {
+  background: #009643;
+}
+
+/* ================== POP-UP THÔNG BÁO ĐẸP (GPS & ĐẶT XE THÀNH CÔNG) ================== */
+.grbModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: grbFadeIn 0.2s ease;
+}
+.grbSuccessCard, .grbModalCard {
+  background: #ffffff;
+  width: 100%;
+  max-width: 390px;
+  border-radius: 24px;
+  padding: 26px 22px 22px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  animation: grbPopUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.grbSuccessCheckWrap {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+}
+.grbSuccessRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #dcfce7;
+  animation: grbPulseRing 1.6s infinite;
+}
+.grbSuccessCheck {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00b14f, #059669);
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 177, 79, 0.35);
+}
+.grbSuccessBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #047857;
+  background: #ecfdf3;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.grbSuccessTitle, .grbModalTitle {
+  font-size: 21px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 6px;
+}
+.grbSuccessSub, .grbModalDesc {
+  font-size: 13.5px;
+  color: #4b5563;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.grbSuccessReceipt {
+  background: #f8faf9;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.grbRecRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.grbRecText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grbRecDivider {
+  height: 1px;
+  background: #e5e7eb;
+}
+.grbRecPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  color: #4b5563;
+}
+.grbRecPriceRow strong {
+  font-size: 17px;
+  color: #00a84f;
+  font-weight: 800;
+}
+
+.grbModalIconWarn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fef3c7;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  margin: 0 auto 12px;
+}
+.grbModalBtns {
+  display: flex;
+  gap: 10px;
+}
+.grbModalBtnSec, .grbModalBtnPri {
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.grbModalBtnSec {
+  background: #f3f4f6;
+  border: none;
+  color: #374151;
+}
+.grbModalBtnPri {
+  background: #00b14f;
+  border: none;
+  color: #ffffff;
+}
+
+#grbMiniToast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 9999;
+}
+#grbMiniToast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes grbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes grbPopUp { from { opacity: 0; transform: scale(0.92) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes grbPulseRing { 0% { transform: scale(0.95); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { transform: scale(0.95); opacity: 0; } }
+
+@media (max-width: 720px) {
+  .grbServiceGrid { grid-template-columns: 1fr; }
+}
+/* ================== POP-UP ĐẶT XE THÀNH CÔNG (ANIMATION VÒNG XANH LÁ) ================== */
+.grbPopOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: grbOverlayIn 0.25s ease forwards;
+}
+.grbPopOverlay.is-closing {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.grbPopBox {
+  background: #ffffff;
+  width: 100%;
+  max-width: 390px;
+  border-radius: 26px;
+  padding: 28px 24px 24px;
+  text-align: center;
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.26);
+  animation: grbCardSpring 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Sân khấu vòng xoay xanh lá */
+.grbSpinStage {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+}
+.grbSpinSvg {
+  width: 82px;
+  height: 82px;
+  transform: rotate(-90deg);
+}
+.grbSpinTrack {
+  fill: none;
+  stroke: #dcfce7;
+  stroke-width: 5.5;
+}
+.grbSpinArc {
+  fill: none;
+  stroke: #00b14f;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  stroke-dasharray: 214;
+  stroke-dashoffset: 214;
+  animation: grbCircleSpinDraw 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.grbCheckBadge {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c458 0%, #009944 100%);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 177, 79, 0.35);
+  transform: scale(0);
+  opacity: 0;
+  animation: grbCheckPop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 0.48s forwards;
+}
+.grbCheckBadge svg {
+  width: 28px;
+  height: 28px;
+}
+
+.grbPopCode {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #047857;
+  background: #ecfdf3;
+  border: 1px solid #a7f3d0;
+  padding: 4px 11px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.grbPopTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 6px;
+}
+.grbPopDesc {
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.grbPopSummary {
+  background: #f8faf9;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 13px 15px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+.grbPopRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.grbPopDotBlue {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 3px #dbeafe;
+  flex-shrink: 0;
+}
+.grbPopDotRed {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px #fee2e2;
+  flex-shrink: 0;
+}
+.grbPopAddr {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grbPopDivider {
+  height: 1px;
+  background: #e5e7eb;
+}
+.grbPopFareRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  color: #4b5563;
+}
+.grbPopFareRow strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: #00a84f;
+}
+
+.grbPopBackBtn {
+  width: 100%;
+  background: #00b14f;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 177, 79, 0.28);
+  transition: background 0.18s ease, transform 0.15s ease;
+}
+.grbPopBackBtn:hover {
+  background: #009643;
+  transform: translateY(-1px);
+}
+
+@keyframes grbOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes grbCardSpring {
+  from { opacity: 0; transform: scale(0.88) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes grbCircleSpinDraw {
+  0% { stroke-dashoffset: 214; transform: rotate(0deg); transform-origin: 40px 40px; }
+  100% { stroke-dashoffset: 0; transform: rotate(360deg); transform-origin: 40px 40px; }
+}
+@keyframes grbCheckPop {
+  0% { opacity: 0; transform: scale(0); }
+  100% { opacity: 1; transform: scale(1); }
+}/* ================== ANIMATION HIỆN ĐẠI CHO MỌI NÚT TRANG ĐẶT XE ================== */
+
+/* 1. Khung chuyển cảnh mượt khi đổi bước trong trang đặt xe */
+#rideFlowBox > div {
+  animation: grbViewSlideUp 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes grbViewSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. Nút chính (Đặt xe / Xác nhận vị trí): Vệt sáng lướt qua + nhún đàn hồi */
+.grbPrimaryBtn, .grbPopBackBtn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, background 0.2s ease !important;
+}
+.grbPrimaryBtn::after, .grbPopBackBtn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  transform: skewX(-22deg);
+  animation: grbBtnShimmer 3.2s infinite ease-in-out;
+  pointer-events: none;
+}
+.grbPrimaryBtn:hover, .grbPopBackBtn:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 12px 26px rgba(0, 177, 79, 0.36) !important;
+}
+.grbPrimaryBtn:active, .grbPopBackBtn:active {
+  transform: translateY(1px) scale(0.97) !important;
+  box-shadow: 0 4px 12px rgba(0, 177, 79, 0.25) !important;
+}
+@keyframes grbBtnShimmer {
+  0%, 55% { left: -120%; }
+  100% { left: 160%; }
+}
+
+/* 3. Nút Định vị GPS & Radar sóng lan tỏa */
+.grbGpsPill, .grbCurrentLocBanner, .grbGpsMiniBtn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease !important;
+}
+.grbGpsPill:hover, .grbCurrentLocBanner:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 20px rgba(0, 177, 79, 0.16);
+}
+.grbGpsPill:active, .grbCurrentLocBanner:active, .grbGpsMiniBtn:active {
+  transform: scale(0.96);
+}
+.grbPulseDot {
+  animation: grbRadarBeacon 1.8s infinite ease-out;
+}
+.grbLocRadar {
+  animation: grbRadarPulseBox 2s infinite ease-in-out;
+}
+.grbGpsMiniBtn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0, 177, 79, 0.18);
+}
+@keyframes grbRadarBeacon {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.75); }
+  70% { box-shadow: 0 0 0 9px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+@keyframes grbRadarPulseBox {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0.35); }
+  50% { transform: scale(1.07); box-shadow: 0 0 0 8px rgba(0, 177, 79, 0); }
+}
+
+/* 4. Thẻ chọn Dịch vụ (GoBike / GoCar / Đặt lịch) & Thẻ chọn Xe */
+.grbSvcCard, .grbVehCard {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.22s ease, background 0.2s ease !important;
+}
+.grbSvcCard:hover, .grbVehCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+.grbSvcCard:active, .grbVehCard:active {
+  transform: scale(0.98);
+}
+.grbSvcCard:hover .grbSvcIconBox,
+.grbVehCard:hover .grbVehIcon,
+.grbVehCard.active .grbVehIcon {
+  animation: grbVehicleBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.grbVehCard.active {
+  box-shadow: 0 8px 20px rgba(0, 177, 79, 0.14);
+}
+@keyframes grbVehicleBounce {
+  0% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.18) rotate(-8deg); }
+  70% { transform: scale(1.08) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* 5. Nút Đảo chiều điểm đón/đến: Xoay 180 độ mượt mà */
+.grbSwapBtn {
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+.grbSwapBtn:hover {
+  transform: rotate(180deg) scale(1.08);
+  border-color: #00b14f;
+  color: #00b14f;
+  background: #f0fdf4;
+}
+.grbSwapBtn:active {
+  transform: rotate(180deg) scale(0.92);
+}
+
+/* 6. Nút Quay lại, nút Tròn trên bản đồ, Chip địa điểm & Tab */
+.grbIconBtn, .grbBackBtn, .grbCircleBtn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease !important;
+}
+.grbIconBtn:hover, .grbBackBtn:hover {
+  transform: translateX(-3px) scale(1.06);
+}
+.grbCircleBtn:hover {
+  transform: scale(1.09);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+.grbIconBtn:active, .grbBackBtn:active, .grbCircleBtn:active {
+  transform: scale(0.92);
+}
+
+.grbChipItem, .grbTimeChip, .grbSegBtn, .grbMapBtn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.grbChipItem:hover, .grbTimeChip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.07);
+}
+.grbChipItem:active, .grbTimeChip:active, .grbSegBtn:active {
+  transform: scale(0.95);
+}
+.grbMapBtn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: #00b14f;
+  box-shadow: 0 10px 24px rgba(0, 177, 79, 0.32);
+}
+.grbMapBtn:active {
+  transform: scale(0.96);
+}
+
+/* 7. Hàng gợi ý địa điểm: Trượt nhẹ sang phải khi di chuột */
+.grbPlaceRow {
+  transition: background 0.18s ease, padding-left 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.grbPlaceRow:hover {
+  padding-left: 21px;
+  background: #f0fdf4;
+}
+.grbPlaceRow:hover .grbArrow {
+  transform: translateX(4px);
+  color: #00b14f;
+}
+.grbArrow {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* 8. Hiệu ứng gợn sóng (Ripple) khi click vào mọi nút */
+.grbRippleWave {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: scale(0);
+  animation: grbRippleExpand 0.55s ease-out forwards;
+  pointer-events: none;
+}
+.grbRippleWave.is-dark {
+  background: rgba(0, 177, 79, 0.18);
+}
+@keyframes grbRippleExpand {
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+/* ================== ANIMATION BẢN ĐỒ TÀI XẾ DI CHUYỂN ĐÓN & TRẢ KHÁCH ================== */
+.gnLiveMapCard {
+  position: relative;
+  height: 156px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eef6f0 0%, #e4efe8 100%);
+  border: 1px solid #d1e7dd;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+/* Lưới đường phố mô phỏng */
+.gnLiveMapGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.75) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.75) 2px, transparent 2px);
+  background-size: 38px 38px;
+  opacity: 0.85;
+}
+.gnLiveMapSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.gnRouteApproach {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+  stroke-linecap: round;
+  animation: gnDashFlow 1.2s linear infinite;
+}
+.gnRouteMainBg {
+  fill: none;
+  stroke: #cbd5e1;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.gnRouteMainActive {
+  fill: none;
+  stroke: #00b14f;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.35s linear;
+}
+@keyframes gnDashFlow {
+  to { stroke-dashoffset: -24; }
+}
+
+/* Điểm mốc trên bản đồ */
+.gnMapPin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+  pointer-events: none;
+}
+.gnMapPinDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+.gnMapPinTag {
+  margin-top: 3px;
+  background: rgba(17, 24, 39, 0.85);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Icon xe tài xế di chuyển mượt */
+.gnDriverMarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #00b14f;
+  box-shadow: 0 6px 16px rgba(0, 177, 79, 0.38);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  z-index: 5;
+  transition: left 0.35s linear, top 0.35s linear;
+}
+.gnDriverMarker::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 177, 79, 0.45);
+  animation: gnDriverPulse 1.5s infinite ease-out;
+}
+@keyframes gnDriverPulse {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+.gnLiveMapBadge {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  border: 1px solid #d1fae5;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+  z-index: 6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+/* ================== GIAO DIỆN HOẠT ĐỘNG / ĐƠN HÀNG CHUẨN GRAB ================== */
+.gnActShell {
+  max-width: 820px;
+  margin: 0 auto 36px;
+  padding: 6px 0;
+}
+.gnActTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.gnActTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+.gnActSub {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Nút Lịch sử góc trên bên phải */
+.gnHistToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 15px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+.gnHistToggleBtn:hover {
+  background: #ecfdf3;
+  border-color: #a7f3d0;
+  color: #008a3e;
+  transform: translateY(-1px);
+}
+.gnHistToggleBtn.is-active {
+  background: #00b14f;
+  border-color: #00b14f;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 177, 79, 0.28);
+}
+.gnHistCnt {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.gnHistToggleBtn.is-active .gnHistCnt {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* Thanh phân loại: Tất cả / Chuyến xe / Đồ ăn */
+.gnCatTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.gnCatPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #4b5563;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.gnCatPill:hover {
+  border-color: #00b14f;
+  color: #008a3e;
+}
+.gnCatPill.active {
+  background: #ecfdf3;
+  border-color: #00b14f;
+  color: #008a3e;
+  box-shadow: 0 3px 10px rgba(0, 177, 79, 0.12);
+}
+
+/* Thẻ từng đơn hàng / chuyến xe */
+.gnOrdItemCard {
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.gnOrdItemCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+.gnOrdItemCard.is-live {
+  border-color: #86efac;
+  background: linear-gradient(180deg, #ffffff 0%, #fafffc 100%);
+}
+.gnOrdHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.gnOrdTypeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.gnOrdCircleIco {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.gnOrdCircleIco.ride { background: #ecfdf3; }
+.gnOrdCircleIco.food { background: #fff7ed; }
+
+.gnOrdStatusPill {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.gnOrdRouteBox {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+  color: #1f2937;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.gnOrdFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+/* Nút "Xem tiến độ của tài xế đang đến" */
+.gnTrackDriverBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #00b14f 0%, #009640 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 177, 79, 0.25);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.gnTrackDriverBtn:hover {
+  transform: translateY(-1.5px) scale(1.02);
+  box-shadow: 0 9px 20px rgba(0, 177, 79, 0.34);
+}
+.gnTrackDriverBtn:active {
+  transform: scale(0.96);
+}
+
+/* Modal Pop-up theo dõi tài xế trực tiếp */
+.gnTrackModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: gnFadeIn 0.2s ease;
+}
+.gnTrackModalCard {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  animation: gnPopUpScale 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes gnFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gnPopUpScale { from { opacity: 0; transform: scale(0.92) translateY(14px); } to { opacity: 1; transform: scale(1) translateY(0); } }

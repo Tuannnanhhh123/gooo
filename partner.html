@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bán hàng cùng GoNow – Đăng ký nhà hàng đối tác</title>
+  <meta name="description" content="Đăng ký nhà hàng đối tác GoNow: nộp giấy phép kinh doanh và giấy chứng nhận an toàn thực phẩm để được duyệt. (Dự án học tập, dữ liệu mô phỏng.)">
+  <meta name="theme-color" content="#0b6b40">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23007a3b'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='34' font-weight='800' fill='white' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/partner.css">
+</head>
+<body class="ptPage">
+<!-- [AI] Trang đăng ký nhà hàng đối tác. Hồ sơ → Firestore partnerApps/{id} (+ partnerLocks/{uid}: mỗi tài khoản Gmail đã xác minh chỉ gửi 1 hồ sơ) và LocalStorage (gonow_partnerapps). Admin duyệt ở tab "Nhà hàng" của admin.html. -->
+<header class="ptTop">
+  <div class="ptBar">
+    <a class="ptLogo" href="index.html" aria-label="GoNow – Trang chủ">Go<span>Now</span><em>Đối tác</em></a>
+    <nav class="ptNav" aria-label="Mục trên trang"><a href="#docs">Giấy tờ cần có</a><a href="#apply">Đăng ký</a></nav>
+    <a class="ptBack" href="index.html">← Về GoNow</a>
+  </div>
+</header>
+
+<main>
+  <section class="ptHero">
+    <div class="ptWrap">
+      <h1>Đưa quán của bạn lên GoNow</h1>
+      <p>Nhận đơn giao đồ ăn từ khách quanh khu vực. Để khách yên tâm, mọi nhà hàng đều được kiểm tra giấy phép kinh doanh và an toàn thực phẩm trước khi mở bán.</p>
+      <a class="btn ptHeroBtn" href="#apply">Bắt đầu đăng ký</a>
+    </div>
+  </section>
+
+  <section class="ptWrap" id="docs">
+    <h2>Giấy tờ cần chuẩn bị</h2>
+    <p class="ptSub">Chụp rõ nét, đủ bốn góc, không che thông tin. Ảnh được tự động thu nhỏ khi tải lên.</p>
+    <ul class="ptDocList">
+      <li><b>Giấy phép kinh doanh</b><span>hoặc Giấy chứng nhận đăng ký hộ kinh doanh, có mã số thuế</span></li>
+      <li><b>Giấy chứng nhận đủ điều kiện an toàn thực phẩm</b><span>còn hạn; cơ sở thuộc diện được miễn thì giải thích để admin xét</span></li>
+      <li><b>Giấy xác nhận tập huấn kiến thức an toàn thực phẩm</b><span>của chủ cơ sở và người trực tiếp chế biến</span></li>
+      <li><b>Giấy khám sức khỏe</b><span>của người trực tiếp chế biến món ăn</span></li>
+      <li><b>CCCD của chủ cơ sở</b><span>hai mặt, trùng tên với chủ tài khoản ngân hàng nhận tiền</span></li>
+      <li><b>Ảnh mặt tiền và khu bếp</b><span>thấy rõ biển hiệu và khu sơ chế, chế biến</span></li>
+    </ul>
+    <p class="ptFine">Danh mục trên chỉ là mô phỏng cho dự án học tập. Quy định thật có thể thay đổi theo loại hình và địa phương, hãy đối chiếu văn bản hiện hành trước khi áp dụng thực tế.</p>
+  </section>
+
+  <section class="ptWrap ptApply" id="apply">
+    <h2>Đăng ký nhà hàng</h2>
+
+    <!-- Hồ sơ đã gửi -->
+    <div class="ptCard" id="ptMine" hidden></div>
+
+    <!-- Bước 0: đăng nhập Gmail đã xác minh -->
+    <div class="ptCard" id="ptAuth" hidden>
+      <h3>Đăng nhập để gửi hồ sơ</h3>
+      <p class="ptSub">Mỗi tài khoản Gmail đã xác minh được gửi 1 hồ sơ để tránh đăng ký giả. Dùng cùng tài khoản với GoNow.</p>
+      <div id="ptAuthForm">
+        <label class="ptField">Gmail<input id="paEmail" type="email" autocomplete="email" placeholder="ten@gmail.com"></label>
+        <label class="ptField">Mật khẩu (tối thiểu 6 ký tự)<input id="paPass" type="password" autocomplete="current-password"></label>
+        <div class="ptActs"><button class="btn" id="paLogin" type="button">Đăng nhập</button><button class="btn ghost" id="paReg" type="button">Tạo tài khoản</button></div>
+      </div>
+      <div id="ptVerify" hidden>
+        <p id="pvText"></p>
+        <div class="ptActs"><button class="btn" id="pvCheck" type="button">Tôi đã xác minh</button><button class="btn ghost" id="pvResend" type="button">Gửi lại email</button><button class="btn ghost" id="pvOut" type="button">Đăng xuất</button></div>
+      </div>
+      <p class="ptMsg" id="paMsg" role="alert"></p>
+    </div>
+
+    <!-- Biểu mẫu 4 bước -->
+    <form class="ptCard" id="ptForm" novalidate hidden autocomplete="off">
+      <ol class="ptSteps" id="ptSteps"><li data-s="1" class="on">Cơ sở</li><li data-s="2">Pháp lý</li><li data-s="3">Thanh toán</li><li data-s="4">Xác nhận</li></ol>
+
+      <fieldset class="ptStep" data-step="1">
+        <legend>Thông tin cơ sở kinh doanh</legend>
+        <div class="ptGrid">
+          <label class="ptField">Tên quán<input id="pName" maxlength="60" placeholder="Ví dụ: Phở Gia Truyền Cô Lan"></label>
+          <label class="ptField">Loại hình<select id="pType"><option value="">-- Chọn --</option><option>Quán ăn / nhà hàng</option><option>Quán cà phê, trà sữa</option><option>Tiệm bánh, tráng miệng</option><option>Bếp ăn, cơ sở chế biến</option><option>Quán chay</option></select></label>
+          <label class="ptField">Khu vực<select id="pArea"></select></label>
+          <label class="ptField">Số điện thoại quán<input id="pPhone" inputmode="tel" maxlength="12" placeholder="09xx xxx xxx"></label>
+          <label class="ptField ptWide">Địa chỉ quán<input id="pAddr" maxlength="160" placeholder="Số nhà, đường, phường, quận"></label>
+          <label class="ptField">Giờ mở cửa<input id="pOpen" type="time" value="07:00"></label>
+          <label class="ptField">Giờ đóng cửa<input id="pClose" type="time" value="21:00"></label>
+        </div>
+        <fieldset class="ptCats"><legend>Nhóm món bán (chọn ít nhất 1)</legend><div id="pCats"></div></fieldset>
+        <div class="ptGps"><button type="button" class="btn ghost sm" id="pGps">Lấy vị trí quán (GPS)</button><span id="pGpsTxt" class="ptSub"></span></div>
+        <p class="ptErr" id="e1"></p>
+      </fieldset>
+
+      <fieldset class="ptStep" data-step="2" hidden>
+        <legend>Giấy tờ pháp lý và an toàn thực phẩm</legend>
+        <div class="ptGrid">
+          <label class="ptField">Họ tên chủ cơ sở<input id="pOwner" maxlength="50" placeholder="Như trên CCCD"></label>
+          <label class="ptField">Số CCCD (12 số)<input id="pCccd" inputmode="numeric" maxlength="12"></label>
+          <label class="ptField">Hình thức<select id="pForm"><option value="">-- Chọn --</option><option>Hộ kinh doanh</option><option>Công ty / doanh nghiệp</option></select></label>
+          <label class="ptField">Mã số thuế (10 hoặc 13 số)<input id="pTax" inputmode="numeric" maxlength="14"></label>
+          <label class="ptField">Số giấy phép kinh doanh / ĐKKD<input id="pLic" maxlength="20"></label>
+          <label class="ptField">Ngày cấp ĐKKD<input id="pLicDate" type="date"></label>
+        </div>
+        <div class="ptAttp">
+          <label class="ptField">Giấy chứng nhận ATTP<select id="pAttpMode"><option value="have">Có giấy chứng nhận</option><option value="exempt">Thuộc diện được miễn</option></select></label>
+          <div id="pAttpHave" class="ptGrid">
+            <label class="ptField">Số giấy chứng nhận ATTP<input id="pAttpNo" maxlength="30"></label>
+            <label class="ptField">Ngày cấp<input id="pAttpFrom" type="date"></label>
+            <label class="ptField">Ngày hết hạn<input id="pAttpTo" type="date"></label>
+          </div>
+          <label class="ptField ptWide" id="pAttpEx" hidden>Giải thích vì sao thuộc diện miễn (admin sẽ xét thủ công)<textarea id="pAttpWhy" maxlength="300" rows="3"></textarea></label>
+        </div>
+        <div class="ptUp" id="ptUploads"></div>
+        <p class="ptErr" id="e2"></p>
+      </fieldset>
+
+      <fieldset class="ptStep" data-step="3" hidden>
+        <legend>Tài khoản ngân hàng nhận tiền</legend>
+        <p class="ptSub">Tên chủ tài khoản phải trùng với tên chủ cơ sở ở bước trước.</p>
+        <div class="ptGrid">
+          <label class="ptField">Ngân hàng<select id="pBank"><option value="">-- Chọn --</option><option>MB Bank</option><option>Vietcombank</option><option>Techcombank</option><option>BIDV</option><option>VietinBank</option><option>ACB</option><option>VPBank</option><option>Agribank</option><option>Khác</option></select></label>
+          <label class="ptField">Số tài khoản<input id="pAcc" inputmode="numeric" maxlength="19"></label>
+          <label class="ptField ptWide">Tên chủ tài khoản (không dấu, viết hoa)<input id="pAccName" maxlength="50" placeholder="NGUYEN VAN A"></label>
+        </div>
+        <p class="ptErr" id="e3"></p>
+      </fieldset>
+
+      <fieldset class="ptStep" data-step="4" hidden>
+        <legend>Kiểm tra và cam kết</legend>
+        <div id="pReview" class="ptReview"></div>
+        <label class="ptChk"><input type="checkbox" id="c1"> Mọi thông tin và giấy tờ tôi cung cấp là đúng sự thật; tôi chịu trách nhiệm trước pháp luật nếu gian dối.</label>
+        <label class="ptChk"><input type="checkbox" id="c2"> Tôi cam kết món ăn bán trên GoNow được chế biến, bảo quản đúng quy định an toàn thực phẩm.</label>
+        <label class="ptChk"><input type="checkbox" id="c3"> Tôi đồng ý để GoNow kiểm tra giấy tờ và có thể yêu cầu bổ sung hoặc kiểm tra thực tế cơ sở.</label>
+        <p class="ptErr" id="e4"></p>
+      </fieldset>
+
+      <p class="ptMsg" id="pMsg" role="alert"></p>
+      <div class="ptNavBtns"><button class="btn ghost" type="button" id="pPrev" hidden>Quay lại</button><span class="sp"></span><button class="btn" type="button" id="pNext">Tiếp tục</button></div>
+    </form>
+  </section>
+</main>
+
+<footer class="ptFoot"><div class="ptWrap">© GoNow 2026 • Dự án học tập, hồ sơ và giấy tờ chỉ mang tính mô phỏng. Đừng tải giấy tờ thật của bạn lên bản demo.</div></footer>
+<div id="toast" role="status"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/partner.js"></script>
+</body>
+</html>
