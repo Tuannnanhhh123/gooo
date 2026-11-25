@@ -4825,3 +4825,194 @@ document.addEventListener('pointerdown', function (e) {
     }
   });
 })();
+/* ================== CHỐNG NHẢY Ô TÌM KIẾM TRANG CHÍNH KHI GÕ TỪNG CHỮ ================== */
+(function fixMainSearchJump() {
+  function lockSearchInput(input) {
+    if (!input || input.dataset.gnSearchLocked) return;
+    input.dataset.gnSearchLocked = '1';
+
+    let savedPos = null;
+    let savedScrollY = 0;
+
+    // 1. Chặn mọi phím tắt toàn cục cướp focus khi đang gõ chữ
+    input.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+    }, true);
+
+    // 2. Ghi nhớ vị trí con trỏ và vị trí cuộn trang trước khi DOM cập nhật
+    input.addEventListener('input', function () {
+      savedPos = this.selectionStart;
+      savedScrollY = window.scrollY;
+
+      // Giữ nguyên focus và vị trí con trỏ ngay sau khi danh sách món bên dưới lọc xong
+      requestAnimationFrame(() => {
+        if (document.activeElement !== input) {
+          input.focus({ preventScroll: true });
+        }
+        if (savedPos !== null && typeof input.setSelectionRange === 'function') {
+          try { input.setSelectionRange(savedPos, savedPos); } catch {}
+        }
+        if (Math.abs(window.scrollY - savedScrollY) > 2) {
+          window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+        }
+      });
+    }, true);
+  }
+
+  function scanAndLock() {
+    // Quét tất cả ô tìm kiếm ở trang chính / header / thanh tìm món
+    const selectors = [
+      '#searchInput',
+      '#foodSearch',
+      '#mainSearch',
+      'header input[type="search"]',
+      'header input[type="text"]',
+      'input[placeholder*="Tìm"]'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(lockSearchInput);
+  }
+
+  scanAndLock();
+  // Theo dõi nếu giao diện vẽ lại ô tìm kiếm thì khóa lại ngay lập tức
+  const obs = new MutationObserver(scanAndLock);
+  obs.observe(document.body, { childList: true, subtree: true });
+})();
+/* Tự động gỡ border trắng của khung rỗng nằm đè lên banner đầu trang */
+(function removeEmptyBannerBorder() {
+  const clean = () => {
+    document.querySelectorAll('section:first-of-type div, .hero div, #hero div, [class*="banner" i] div, [class*="hero" i] div').forEach(el => {
+      const cs = getComputedStyle(el);
+      if (cs.borderWidth !== '0px' && cs.borderStyle !== 'none') {
+        el.style.setProperty('border', 'none', 'important');
+        el.style.setProperty('outline', 'none', 'important');
+      }
+    });
+  };
+  clean();
+  setTimeout(clean, 400);
+})();
+/* ================== TỰ ĐỘNG LÀM ĐẦY BẢN ĐỒ ĐẶT XE KHI MỞ TRÊN ĐIỆN THOẠI ================== */
+(function fixFullScreenRideMap() {
+  function refreshRideMap() {
+    const rideSec = document.getElementById('ride');
+    if (!rideSec || rideSec.hidden) return;
+
+    // Kích hoạt sự kiện resize để Leaflet tự tính lại toàn bộ khung hình full-screen
+    window.dispatchEvent(new Event('resize'));
+
+    // Gọi trực tiếp invalidateSize() nếu biến bản đồ đặt xe đang tồn tại
+    const mapCandidates = [window.rideMap, window.map, window._rideMap];
+    mapCandidates.forEach(m => {
+      if (m && typeof m.invalidateSize === 'function') {
+        try { m.invalidateSize(true); } catch {}
+      }
+    });
+  }
+
+  // Chạy ngay khi bấm chuyển sang tab Đặt xe hoặc bấm chọn dịch vụ Xe máy / Ô tô
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-tab="ride"], [data-service], .svcBtn, .rideSvc')) {
+      setTimeout(refreshRideMap, 60);
+      setTimeout(refreshRideMap, 300);
+    }
+  });
+
+  // Theo dõi khi trang #ride được mở ra
+  const rideEl = document.getElementById('ride');
+  if (rideEl) {
+    new MutationObserver(refreshRideMap).observe(rideEl, {
+      attributes: true,
+      attributeFilter: ['hidden', 'class', 'style']
+    });
+  }
+})();
+/* ================== ĐỒNG BỘ MÓN MỚI TỪ CỬA HÀNG LÊN TRANG CHỦ (BẢN FIX TRIỆT ĐỂ) ================== */
+(function syncPartnerFoodsFull() {
+  function buildCompleteFoodItem(cf) {
+    return {
+      ...cf,
+      sid: cf.sid || cf.storeId || 1,
+      storeId: cf.storeId || cf.sid || 1,
+      shop: cf.shop || cf.storeName || 'Cửa hàng đối tác GoNow',
+      sold: cf.sold || 'Mới mở bán',
+      time: cf.time || '15-20 phút',
+      rating: Number(cf.rating || 5.0),
+      tag: cf.tag || 'Quán mới'
+    };
+  }
+
+  function syncAll() {
+    let customFoods = [];
+    let partners = [];
+    try { customFoods = JSON.parse(localStorage.getItem('gonow_partner_foods') || '[]'); } catch {}
+    try { partners = JSON.parse(localStorage.getItem('gonow_partners') || '[]'); } catch {}
+
+    // 1. Nạp cửa hàng mới đăng ký vào mảng STORES (nếu có)
+    if (Array.isArray(partners) && partners.length && typeof STORES !== 'undefined' && Array.isArray(STORES)) {
+      partners.forEach(p => {
+        const sid = p.storeId || p.id;
+        if (!sid) return;
+        if (!STORES.some(s => String(s.id) === String(sid))) {
+          STORES.unshift({
+            id: sid,
+            name: p.storeName,
+            district: p.district || 'Quận 1',
+            near: 0.5,
+            rating: 5.0,
+            cats: [p.mainCat || 'Cơm', 'Đồ uống', 'Ăn vặt', 'Món nước', 'Pizza & Burger', 'Tráng miệng', 'Món chay'],
+            promos: ['FOOD10']
+          });
+        }
+      });
+    }
+
+    // 2. Nạp món ăn mới vào cả biến FOODS, ALL_FOODS và localStorage('gonow_foods')
+    if (Array.isArray(customFoods) && customFoods.length) {
+      const normalized = customFoods.map(buildCompleteFoodItem);
+
+      [typeof FOODS !== 'undefined' ? FOODS : null, typeof ALL_FOODS !== 'undefined' ? ALL_FOODS : null].forEach(arr => {
+        if (!Array.isArray(arr)) return;
+        normalized.forEach(item => {
+          const idx = arr.findIndex(f => String(f.id) === String(item.id));
+          if (idx >= 0) arr[idx] = { ...arr[idx], ...item };
+          else arr.unshift(item);
+        });
+      });
+
+      // Đồng bộ thêm vào kho gonow_foods nếu trang chủ dùng cache này
+      try {
+        const storedFoods = JSON.parse(localStorage.getItem('gonow_foods') || '[]');
+        if (Array.isArray(storedFoods) && storedFoods.length) {
+          normalized.forEach(item => {
+            const idx = storedFoods.findIndex(f => String(f.id) === String(item.id));
+            if (idx >= 0) storedFoods[idx] = { ...storedFoods[idx], ...item };
+            else storedFoods.unshift(item);
+          });
+          localStorage.setItem('gonow_foods', JSON.stringify(storedFoods));
+        }
+      } catch {}
+    }
+
+    // 3. Gọi lại tất cả các hàm render danh sách món trên trang chủ
+    ['renderFood', 'renderFoods', 'renderHome', 'renderStores', 'applyFoodFilter'].forEach(fnName => {
+      if (typeof window[fnName] === 'function') {
+        try { window[fnName](); } catch {}
+      }
+    });
+  }
+
+  // Chạy ngay lập tức và chạy lại sau khi DOM/dữ liệu gốc khởi tạo xong
+  syncAll();
+  window.addEventListener('DOMContentLoaded', () => setTimeout(syncAll, 150));
+  setTimeout(syncAll, 500);
+  setTimeout(syncAll, 1500);
+
+  // Tự động cập nhật khi tab Cửa hàng vừa thêm món hoặc khi quay lại tab trang chủ
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'gonow_partner_foods' || e.key === 'gonow_partners') syncAll();
+  });
+  window.addEventListener('focus', syncAll);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncAll();
+  });
+})();
