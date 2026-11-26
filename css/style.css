@@ -3911,4 +3911,10 @@ section:first-of-type > div > div {
 .accMemberBadge:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(0, 177, 79, 0.18);
+   
+}
+/* Ẩn hoàn toàn các nút chuyển slide (.heroDots và .heroNav) trong carousel banner */
+.heroDots,
+.heroNav {
+  display: none !important;
 }
