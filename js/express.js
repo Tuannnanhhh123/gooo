@@ -1,13 +1,14 @@
-/* [AI] GoNow Express — Luồng giao hàng siêu tốc chuẩn GrabExpress (5 màn hình + Bản đồ thực tế) */
+
+/* [AI] GoNow Express — Tách chuẩn 5 bước độc lập (Mỗi bước 1 màn hình riêng) */
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
 
   const SERVICES = [
-    { id: 'priority', name: 'Ưu Tiên', desc: 'Lấy hàng ngay, giao hỏa tốc', eta: 'Lấy hàng trong vòng 15 phút', mult: 1.55, base: 18000, icon: '⚡', color: '#7c3aed' },
-    { id: 'fast', name: 'Nhanh', desc: 'Lấy hàng 15 phút, giao nhanh 1 giờ', eta: 'Lấy hàng trong 15–20 phút', mult: 1.0, base: 14000, icon: '🚀', color: '#0284c7' },
-    { id: 'saver', name: 'Tiết Kiệm', desc: 'Giá siêu rẻ, giao trong ngày', eta: 'Giao trước 18:00 hôm nay', mult: 0.72, base: 11000, icon: '🏷️', color: '#059669' },
-    { id: 'van_priority', name: 'Tải Van Ưu Tiên', desc: 'Lấy hàng ngay, giao hỏa tốc', eta: 'Lấy hàng ngay lập tức', mult: 3.6, base: 65000, icon: '🚐', color: '#7c3aed', isVan: true },
-    { id: 'van_fast', name: 'Tải Van Nhanh', desc: 'Lấy hàng nhanh, giá tốt hơn', eta: 'Lấy hàng trong 25 phút', mult: 2.8, base: 50000, icon: '🚚', color: '#0284c7', isVan: true }
+    { id: 'priority', name: 'Ưu Tiên', desc: 'Lấy hàng ngay, giao hỏa tốc', eta: 'Lấy hàng trong vòng 15 phút', base: 18000, icon: '⚡', color: '#7c3aed' },
+    { id: 'fast', name: 'Nhanh', desc: 'Lấy hàng 15 phút, giao nhanh 1 giờ', eta: 'Lấy hàng trong 15–20 phút', base: 14000, icon: '🚀', color: '#0284c7' },
+    { id: 'saver', name: 'Tiết Kiệm', desc: 'Giá siêu rẻ, giao trong ngày', eta: 'Giao trước 18:00 hôm nay', base: 11000, icon: '🏷️', color: '#059669' },
+    { id: 'van_priority', name: 'Tải Van Ưu Tiên', desc: 'Lấy hàng ngay, giao hỏa tốc', eta: 'Lấy hàng ngay lập tức', base: 65000, icon: '🚐', color: '#7c3aed', isVan: true },
+    { id: 'van_fast', name: 'Tải Van Nhanh', desc: 'Lấy hàng nhanh, giá tốt hơn', eta: 'Lấy hàng trong 25 phút', base: 50000, icon: '🚚', color: '#0284c7', isVan: true }
   ];
 
   const VEHICLES = [
@@ -43,8 +44,10 @@
   ];
 
   const state = {
-    view: 'home', // home | map | contact | detail | item | review
-    sheet: null,  // null | 'service' | 'vehicle' | 'fare'
+    // 5 bước tách biệt rõ ràng:
+    // 'step1_home' -> 'step2_map' -> 'step3_contact' -> 'step4_service' -> 'step5_detail' -> 'step5b_item' -> 'step6_review'
+    step: 'step1_home',
+    modal: null, // null | 'vehicle' | 'fare'
     toast: '',
     pickup: {
       title: '86 Street No.27',
@@ -66,20 +69,13 @@
       lat: 10.8165,
       lng: 106.6644
     },
-    mapTarget: 'dropoff', // 'pickup' | 'dropoff'
-    tempPin: { title: 'Ga Quốc Tế - Nhà Ga 2 (T2) - Sân Bay Tân Sơn Nhất', sub: 'Trường Sơn, P.Tân Sơn Hòa, TP.Hồ Chí Minh', lat: 10.8165, lng: 106.6644 },
+    mapTarget: 'dropoff',
+    tempPin: { ...QUICK_PLACES[0] },
     serviceId: 'priority',
     vehicleId: 'bike',
     promoActive: true,
     promoCode: 'Ưu Tiên - Giảm 15% 7h-20h',
-    item: {
-      confirmed: false,
-      size: 'S',
-      weight: '',
-      cat: '',
-      photo: '',
-      guarantee: 'Phổ thông'
-    },
+    item: { confirmed: false, size: 'S', weight: '', cat: '', photo: '' },
     addons: new Set()
   };
 
@@ -136,16 +132,6 @@
     return root;
   }
 
-  function syncUserDefaults() {
-    try {
-      const u = JSON.parse(localStorage.getItem('gn_user') || 'null');
-      if (u) {
-        if (u.name) state.pickup.name = u.name;
-        if (u.phone) state.pickup.phone = u.phone;
-      }
-    } catch {}
-  }
-
   function showToast(msg) {
     state.toast = msg;
     render();
@@ -154,60 +140,61 @@
         state.toast = '';
         render();
       }
-    }, 3200);
+    }, 3000);
   }
 
-  /* ================== RENDER CÁC MÀN HÌNH ================== */
+  /* ================== RENDER TỪNG BƯỚC ĐỘC LẬP ================== */
   function render() {
     const root = ensureRoot();
     if (root.hidden) return;
 
     const p = calcPricing();
-    let html = `<div class="gexShell">`;
+    let stepHtml = '';
 
-    if (state.toast) {
-      html += `
-        <div class="gexTopToast">
-          <span class="gexToastCheck">✓</span>
-          <span style="flex:1">${esc(state.toast)}</span>
-          <button type="button" data-act="close-toast" aria-label="Đóng">✕</button>
-        </div>`;
+    switch (state.step) {
+      case 'step1_home':    stepHtml = renderStep1Home(); break;
+      case 'step2_map':     stepHtml = renderStep2Map(); break;
+      case 'step3_contact': stepHtml = renderStep3Contact(); break;
+      case 'step4_service': stepHtml = renderStep4Service(p); break;
+      case 'step5_detail':  stepHtml = renderStep5Detail(p); break;
+      case 'step5b_item':   stepHtml = renderStep5bItem(); break;
+      case 'step6_review':  stepHtml = renderStep6Review(p); break;
     }
 
-    if (state.view === 'home') html += renderHome();
-    else if (state.view === 'map') html += renderMapPicker();
-    else if (state.view === 'contact') html += renderContactForm();
-    else if (state.view === 'detail') html += renderOrderDetail(p);
-    else if (state.view === 'item') html += renderItemDetail();
-    else if (state.view === 'review') html += renderFinalReview(p);
+    root.innerHTML = `
+      <div class="gexShell">
+        ${state.toast ? `
+          <div class="gexTopToast">
+            <span class="gexToastCheck">✓</span>
+            <span style="flex:1">${esc(state.toast)}</span>
+            <button type="button" data-act="close-toast">✕</button>
+          </div>` : ''}
+        ${stepHtml}
+        ${state.modal === 'vehicle' ? renderVehicleModal(p) : ''}
+        ${state.modal === 'fare' ? renderFareModal(p) : ''}
+      </div>`;
 
-    if (state.sheet === 'service') html += renderServiceSheet(p);
-    if (state.sheet === 'vehicle') html += renderVehicleSheet(p);
-    if (state.sheet === 'fare') html += renderFareSheet(p);
-
-    html += `</div>`;
-    root.innerHTML = html;
-
-    if (state.view === 'map' || state.view === 'contact') {
+    if (state.step === 'step2_map' || state.step === 'step3_contact') {
       setTimeout(initLeafletMap, 30);
     }
   }
 
-  /* MÀN 1: TRANG CHỦ GRABEXPRESS (ẢNH 1) */
-  function renderHome() {
+  /* BƯỚC 1: TRANG CHỦ EXPRESS */
+  function renderStep1Home() {
     return `
       <div class="gexScroll" style="padding-bottom:28px">
         <div class="gexHero">
           <div class="gexTopBar">
             <button type="button" class="gexIconBtn" data-act="exit" aria-label="Quay lại">←</button>
-            <button type="button" class="gexIconBtn" data-act="open-orders" title="Đơn giao hàng của tôi">📋</button>
+            <span style="font-size:12.5px;font-weight:700;color:#065f46;background:#fff;padding:4px 12px;border-radius:999px">Bước 1/5 • Chọn điểm giao</span>
+            <button type="button" class="gexIconBtn" data-act="open-orders" title="Đơn giao hàng">📋</button>
           </div>
           <div class="gexHeroRow">
             <div style="min-width:0">
               <h2>Cần ship hàng gấp?</h2>
-              <p data-act="open-map-drop" style="cursor:pointer">Đặt GoExpress nhận ưu đãi cuối ngay! ›</p>
+              <p data-act="go-step2-drop" style="cursor:pointer">Đặt GoExpress nhận ưu đãi cuối ngay! ›</p>
             </div>
-            <div class="gexMascot" aria-hidden="true">🛵📦</div>
+            <div class="gexMascot">🛵📦</div>
           </div>
         </div>
 
@@ -218,16 +205,16 @@
             <span class="gexDotRed"></span>
           </div>
           <div class="gexRouteInputs">
-            <div class="gexAddrRow" data-act="open-map-pick">
+            <div class="gexAddrRow" data-act="go-step2-pick">
               <div class="gexAddrTitle">${esc(state.pickup.title)}</div>
             </div>
-            <div class="gexAddrRow" data-act="open-map-drop">
+            <div class="gexAddrRow" data-act="go-step2-drop">
               ${state.dropoff.title
                 ? `<div class="gexAddrTitle">${esc(state.dropoff.title)}</div>`
                 : `<div class="gexAddrPlaceholder">Giao đến đâu?</div>`}
             </div>
           </div>
-          <button type="button" class="gexSwapBtn" data-act="swap-addr" title="Đổi chiều">⇅</button>
+          <button type="button" class="gexSwapBtn" data-act="swap-addr">⇅</button>
         </div>
 
         <div class="gexChips">
@@ -246,31 +233,19 @@
           <h3>Bạn có thể thích</h3>
           <div class="gexPromoGrid">
             <div class="gexPromoCard" style="background:#fdf2f2" data-act="apply-promo-card" data-code="Hội Chủ Shop - Giảm 20% Ưu Tiên">
-              <div>
-                <b>Hội Chủ Shop</b>
-                <span>Giảm 20%* giá cước đơn Ưu Tiên</span>
-              </div>
+              <div><b>Hội Chủ Shop</b><span>Giảm 20%* giá cước đơn Ưu Tiên</span></div>
               <span class="gexBadgeShop">HỘI CHỦ SHOP</span>
             </div>
             <div class="gexPromoCard" style="background:#eef8fc" data-act="apply-promo-card" data-code="Đổi điểm thưởng - Giảm 15.000đ">
-              <div>
-                <b>Đổi mã ưu đãi</b>
-                <span>Đổi GoPoints sang mã ưu đãi GE</span>
-              </div>
+              <div><b>Đổi mã ưu đãi</b><span>Đổi GoPoints sang mã ưu đãi GE</span></div>
               <span class="gexCoin">G</span>
             </div>
             <div class="gexPromoCard" style="background:#eafaf1" data-act="apply-promo-card" data-code="Đi đơn có quà - Trợ giá 15%">
-              <div>
-                <b>Đi đơn có quà</b>
-                <span>Đi đơn càng nhiều, trợ giá càng hời</span>
-              </div>
+              <div><b>Đi đơn có quà</b><span>Đi đơn càng nhiều, trợ giá càng hời</span></div>
               <span style="font-size:26px">🎁</span>
             </div>
             <div class="gexPromoCard" style="background:#fdf2f4" data-act="select-van">
-              <div>
-                <b>Xe Tải Van</b>
-                <span>Giảm lên đến 50%*</span>
-              </div>
+              <div><b>Xe Tải Van</b><span>Giảm lên đến 50%*</span></div>
               <span style="font-size:26px">🚐</span>
             </div>
           </div>
@@ -278,72 +253,64 @@
 
         <div class="gexSec">
           <h3>Khám phá thêm</h3>
-          <div class="gexExploreCard" data-act="open-map-drop">
+          <div class="gexExploreCard" data-act="go-step2-drop">
             <div class="gexExploreIco">🛍️</div>
-            <div>
-              <b>GoExpress Mua hộ</b>
-              <p>Ngồi ở nhà, cần gì GoExpress mua hộ</p>
-            </div>
+            <div><b>GoExpress Mua hộ</b><p>Ngồi ở nhà, cần gì GoExpress mua hộ</p></div>
           </div>
         </div>
       </div>`;
   }
 
-  /* MÀN 2: BẢN ĐỒ CHỌN ĐIỂM ĐẾN / ĐIỂM LẤY HÀNG (ẢNH 8) */
-  function renderMapPicker() {
+  /* BƯỚC 2: BẢN ĐỒ GHIM VỊ TRÍ */
+  function renderStep2Map() {
     const isDrop = state.mapTarget === 'dropoff';
     return `
       <div class="gexMapPage">
         <div id="gexLeafletMap" class="gexMapCanvas"></div>
-        <button type="button" class="gexMapBack" data-act="back-home" aria-label="Quay lại">←</button>
+        <button type="button" class="gexMapBack" data-act="back-step1">←</button>
+        <div class="gexStepPillFloat">Bước 2/5 • Ghim vị trí trên bản đồ</div>
         <button type="button" class="gexMapGps" data-act="locate-gps" title="Vị trí hiện tại">⌖</button>
 
         <div class="gexMapSheet">
           <div class="gexSheetHandle"></div>
           <div class="gexMapSearchBox">
-            <input type="text" id="gexMapSearchInput" class="gexMapSearchIn" placeholder="Tìm địa chỉ hoặc tên tòa nhà..." value="${esc(state.tempPin.title)}">
+            <input type="text" id="gexMapSearchInput" class="gexMapSearchIn" placeholder="Nhập địa chỉ cần tìm..." value="${esc(state.tempPin.title)}">
             <button type="button" class="gexMapSearchBtn" data-act="search-map">Tìm</button>
           </div>
-
-          <div class="gexMapPinInfo">
-            <div style="flex:1;min-width:0">
-              <div class="gexMapPinTitle">${esc(state.tempPin.title)} ✎</div>
-              <div class="gexMapPinSub">${esc(state.tempPin.sub)}</div>
-            </div>
-          </div>
-
+          <div class="gexMapPinTitle">${esc(state.tempPin.title)} ✎</div>
+          <div class="gexMapPinSub">${esc(state.tempPin.sub)}</div>
           <div class="gexMapSubSpot">
             <span>📍</span>
             <b style="flex:1">Điểm Đón GoBike / Cổng chính</b>
             <span style="color:#6b7280">⋮</span>
           </div>
-
-          <button type="button" class="gexPrimaryBtn" data-act="confirm-pin">
+          <button type="button" class="gexPrimaryBtn" data-act="confirm-step2">
             ${isDrop ? 'Chọn điểm đến này' : 'Chọn điểm lấy hàng này'}
           </button>
         </div>
       </div>`;
   }
 
-  /* MÀN 3: THÔNG TIN ĐIỂM GIAO / LẤY HÀNG (ẢNH 7) */
-  function renderContactForm() {
+  /* BƯỚC 3: THÔNG TIN ĐIỂM GIAO / LẤY HÀNG */
+  function renderStep3Contact() {
     const isDrop = state.mapTarget === 'dropoff';
     const data = isDrop ? state.dropoff : state.pickup;
     const valid = data.name.trim().length >= 2 && data.phone.trim().length >= 8;
 
     return `
       <div class="gexMapPage">
-        <div id="gexLeafletMap" class="gexMapCanvas" style="height:28%"></div>
-        <button type="button" class="gexMapBack" data-act="back-map" aria-label="Quay lại">←</button>
+        <div id="gexLeafletMap" class="gexMapCanvas" style="height:26%"></div>
+        <button type="button" class="gexMapBack" data-act="back-step2">←</button>
+        <div class="gexStepPillFloat">Bước 3/5 • Thông tin liên lạc</div>
 
-        <div class="gexMapSheet" style="max-height:78%;overflow-y:auto">
+        <div class="gexMapSheet" style="max-height:80%;overflow-y:auto">
           <div class="gexSheetHandle"></div>
-          <h3 style="font-size:20px;font-weight:800;margin:0 0 14px">
+          <h3 style="font-size:20px;font-weight:800;margin:0 0 12px">
             ${isDrop ? 'Thông tin điểm giao hàng' : 'Thông tin điểm lấy hàng'}
           </h3>
 
           <label class="gexFieldLbl">Địa chỉ</label>
-          <div class="gexAddrSelectBtn" data-act="back-map">
+          <div class="gexAddrSelectBtn" data-act="back-step2">
             <span class="gexEllipsis">${esc(data.title)}</span>
             <span>›</span>
           </div>
@@ -361,23 +328,62 @@
           <label class="gexFieldLbl">Ghi chú cho tài xế</label>
           <input type="text" class="gexInput" id="gexNoteIn" placeholder="Ghi chú cho tài xế" value="${esc(data.note)}">
 
-          <button type="button" class="gexPrimaryBtn" id="gexContactConfirmBtn" data-act="save-contact" style="margin-top:16px" ${valid ? '' : 'disabled'}>
+          <button type="button" class="gexPrimaryBtn" id="gexContactConfirmBtn" data-act="confirm-step3" style="margin-top:16px" ${valid ? '' : 'disabled'}>
             Xác nhận
           </button>
         </div>
       </div>`;
   }
 
-  /* MÀN 4: CHI TIẾT ĐƠN HÀNG (ẢNH 2 & 4) */
-  function renderOrderDetail(p) {
-    const hasReceiver = state.dropoff.name.trim() && state.dropoff.phone.trim();
-    const canReview = hasReceiver && state.item.confirmed;
-
+  /* BƯỚC 4: TRANG CHỌN DỊCH VỤ GIAO HÀNG (TÁCH THÀNH 1 BƯỚC RIÊNG BIỆT) */
+  function renderStep4Service(p) {
     return `
       <div class="gexHeaderBar">
-        <button type="button" class="gexBackPlain" data-act="back-home" aria-label="Quay lại">←</button>
+        <button type="button" class="gexBackPlain" data-act="back-step3">←</button>
+        <h2>Chọn dịch vụ giao</h2>
+        <span style="font-size:12px;font-weight:700;color:#059669">Bước 4/5</span>
+      </div>
+
+      <div class="gexScroll" style="padding:14px 20px 100px;background:#fff">
+        <div class="gexMiniRouteBanner">
+          <div><b style="color:#1d74f5">● Từ:</b> ${esc(state.pickup.title)} (${esc(state.pickup.name)})</div>
+          <div style="margin-top:4px"><b style="color:#ea4335">● Đến:</b> ${esc(state.dropoff.title)} (${esc(state.dropoff.name)})</div>
+        </div>
+
+        <h3 style="font-size:19px;font-weight:800;margin:16px 0 12px">Bạn muốn chọn dịch vụ giao nào?</h3>
+
+        ${SERVICES.map(s => {
+          const active = s.id === state.serviceId;
+          const est = Math.round(((s.base + p.km * 4800) * (s.isVan ? 1 : 0.85)) / 1000) * 1000;
+          return `
+            <div class="gexSvcOption ${active ? 'active' : ''}" data-act="pick-service" data-id="${s.id}">
+              <div class="gexSvcBadgeIco" style="background:${s.color}18;color:${s.color}">${s.icon}</div>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <b style="font-size:16px">${esc(s.name)}</b>
+                  <b style="font-size:16px">${s.id === 'saver' ? 'Từ ' : ''}${money(est)}</b>
+                </div>
+                <div style="font-size:13.5px;color:#6b7280;margin-top:2px">${esc(s.desc)}</div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+
+      <div class="gexFooter">
+        <button type="button" class="gexPrimaryBtn" data-act="confirm-step4">
+          Tiếp theo
+        </button>
+      </div>`;
+  }
+
+  /* BƯỚC 5: CHI TIẾT ĐƠN HÀNG (SAU KHI BẤM TIẾP THEO Ở BƯỚC 4) */
+  function renderStep5Detail(p) {
+    const canReview = state.item.confirmed;
+    return `
+      <div class="gexHeaderBar">
+        <button type="button" class="gexBackPlain" data-act="back-step4">←</button>
         <h2>Chi tiết đơn hàng</h2>
-        <button type="button" class="gexShareBtn" data-act="share-trip" title="Chia sẻ hành trình">🔗</button>
+        <button type="button" class="gexShareBtn" data-act="share-trip" title="Chia sẻ">🔗</button>
       </div>
 
       <div class="gexScroll">
@@ -395,15 +401,13 @@
               </div>
               <div class="gexStopBlock" data-act="edit-dropoff" style="border-top:1px solid #f1f5f9;padding-top:10px;margin-top:10px">
                 <div class="gexAddrTitle">${esc(state.dropoff.title)}</div>
-                ${hasReceiver
-                  ? `<div class="gexAddrSub">${esc(state.dropoff.name)} • ${esc(state.dropoff.phone)}</div>`
-                  : `<span class="gexAddrLink">Thêm thông tin người nhận *</span>`}
+                <div class="gexAddrSub">${esc(state.dropoff.name)} • ${esc(state.dropoff.phone)}</div>
               </div>
             </div>
-            <button type="button" class="gexSwapMini" data-act="swap-addr" title="Đổi chiều">⇅</button>
+            <button type="button" class="gexSwapMini" data-act="swap-addr">⇅</button>
           </div>
 
-          <div class="gexRowLink" data-act="open-service-sheet">
+          <div class="gexRowLink" data-act="back-step4">
             <div class="gexSvcIco" style="background:#f3e8ff">${p.svc.icon}</div>
             <div style="flex:1">
               <div style="font-weight:700;font-size:15px">${esc(p.svc.eta)}</div>
@@ -412,7 +416,7 @@
             <span class="gexChevron">›</span>
           </div>
 
-          <div class="gexRowLink" data-act="open-vehicle-sheet">
+          <div class="gexRowLink" data-act="open-vehicle-modal">
             <div class="gexSvcIco">${p.veh.icon}</div>
             <div style="flex:1">
               <div style="font-weight:700;font-size:15px">${esc(p.veh.name)}</div>
@@ -421,7 +425,7 @@
             <span class="gexChevron">›</span>
           </div>
 
-          <div class="gexRowLink" data-act="open-item-detail">
+          <div class="gexRowLink" data-act="go-step5b-item">
             <div class="gexSvcIco" style="background:#ffedd5">📦</div>
             <div style="flex:1">
               ${state.item.confirmed
@@ -447,23 +451,20 @@
 
         <div class="gexSecTitle">Dịch vụ thêm</div>
         <div class="gexCard">
-          ${ADDONS.map(a => {
-            const checked = state.addons.has(a.id);
-            return `
-              <label class="gexAddonRow">
-                <input type="checkbox" data-act="toggle-addon" data-id="${a.id}" ${checked ? 'checked' : ''}>
-                <div style="flex:1">
-                  <div style="font-weight:600;font-size:14.5px;color:#111827">${esc(a.name)}</div>
-                  ${a.desc ? `<div style="font-size:12.5px;color:#6b7280;margin-top:2px">${esc(a.desc)}</div>` : ''}
-                </div>
-                <div style="font-weight:600;font-size:14.5px;color:#111827">${money(a.price)}</div>
-              </label>`;
-          }).join('')}
+          ${ADDONS.map(a => `
+            <label class="gexAddonRow">
+              <input type="checkbox" data-act="toggle-addon" data-id="${a.id}" ${state.addons.has(a.id) ? 'checked' : ''}>
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:14.5px;color:#111827">${esc(a.name)}</div>
+                ${a.desc ? `<div style="font-size:12.5px;color:#6b7280;margin-top:2px">${esc(a.desc)}</div>` : ''}
+              </div>
+              <div style="font-weight:600;font-size:14.5px;color:#111827">${money(a.price)}</div>
+            </label>`).join('')}
         </div>
       </div>
 
       <div class="gexBottomCheckout">
-        <div class="gexTotalRow" data-act="open-fare-sheet">
+        <div class="gexTotalRow" data-act="open-fare-modal">
           <span>Tổng cộng</span>
           <div style="display:flex;align-items:baseline;gap:8px">
             <strong class="gexFinalPrice">${money(p.finalTotal)}</strong>
@@ -472,25 +473,25 @@
           </div>
         </div>
         <div class="gexBtnRow">
-          <button type="button" class="gexBookmarkBtn" data-act="save-draft" title="Lưu đơn nháp">🔖</button>
-          <button type="button" class="gexPrimaryBtn" data-act="go-review" ${canReview ? '' : 'disabled'}>
-            Kiểm tra đơn hàng
+          <button type="button" class="gexBookmarkBtn" data-act="save-draft" title="Lưu nháp">🔖</button>
+          <button type="button" class="gexPrimaryBtn" data-act="go-step6-review" ${canReview ? '' : 'disabled'}>
+            ${canReview ? 'Kiểm tra đơn hàng' : 'Thêm chi tiết món hàng để tiếp tục'}
           </button>
         </div>
       </div>`;
   }
 
-  /* MÀN 5: CHI TIẾT MÓN HÀNG (ẢNH 6) */
-  function renderItemDetail() {
+  /* BƯỚC 5B: TRANG CHI TIẾT MÓN HÀNG */
+  function renderStep5bItem() {
     const valid = Number(state.item.weight) > 0 && Boolean(state.item.cat);
     return `
       <div class="gexHeaderBar">
-        <button type="button" class="gexBackPlain" data-act="back-detail" aria-label="Quay lại">←</button>
+        <button type="button" class="gexBackPlain" data-act="back-step5">←</button>
         <h2>Chi tiết món hàng</h2>
         <span style="width:36px"></span>
       </div>
 
-      <div class="gexScroll" style="padding:12px 20px 110px;background:#fff">
+      <div class="gexScroll" style="padding:12px 20px 130px;background:#fff">
         <p style="font-size:14.5px;color:#4b5563;margin:0 0 16px">
           Thông tin này giúp tài xế sắp xếp và bảo quản hàng đúng cách.
         </p>
@@ -546,21 +547,21 @@
         </div>
       </div>
 
-      <div class="gexFooter" style="background:transparent;box-shadow:none">
+      <div class="gexFooter" style="background:#fff">
         <div class="gexGuaranteeBanner">
           Mới! Ra mắt gói Phổ thông với mức bồi thường lên đến 3.000.000đ
         </div>
-        <button type="button" class="gexPrimaryBtn" id="gexItemConfirmBtn" data-act="save-item" ${valid ? '' : 'disabled'}>
+        <button type="button" class="gexPrimaryBtn" id="gexItemConfirmBtn" data-act="confirm-step5b" ${valid ? '' : 'disabled'}>
           Xác nhận
         </button>
       </div>`;
   }
 
-  /* MÀN 6: KIỂM TRA & XÁC NHẬN ĐẶT ĐƠN */
-  function renderFinalReview(p) {
+  /* BƯỚC 6: KIỂM TRA & ĐẶT ĐƠN */
+  function renderStep6Review(p) {
     return `
       <div class="gexHeaderBar">
-        <button type="button" class="gexBackPlain" data-act="back-detail" aria-label="Quay lại">←</button>
+        <button type="button" class="gexBackPlain" data-act="back-step5">←</button>
         <h2>Xác nhận đơn giao hàng</h2>
         <span style="width:36px"></span>
       </div>
@@ -603,37 +604,10 @@
       </div>`;
   }
 
-  /* BOTTOM SHEET 1: CHỌN DỊCH VỤ GIAO (ẢNH 3) */
-  function renderServiceSheet(p) {
+  /* MODAL CHỌN LOẠI XE */
+  function renderVehicleModal(p) {
     return `
-      <div class="gexSheetOverlay" data-act="close-sheet">
-        <div class="gexBottomModal" onclick="event.stopPropagation()">
-          <div class="gexSheetHandle"></div>
-          <h3 style="font-size:20px;font-weight:800;margin:6px 0 14px">Bạn muốn chọn dịch vụ giao nào?</h3>
-          ${SERVICES.map(s => {
-            const active = s.id === state.serviceId;
-            const est = Math.round(((s.base + p.km * 4800) * (s.isVan ? 1 : 0.85)) / 1000) * 1000;
-            return `
-              <div class="gexSvcOption ${active ? 'active' : ''}" data-act="pick-service" data-id="${s.id}">
-                <div class="gexSvcBadgeIco" style="background:${s.color}18;color:${s.color}">${s.icon}</div>
-                <div style="flex:1">
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <b style="font-size:16px">${esc(s.name)}</b>
-                    <b style="font-size:16px">${s.id === 'saver' ? 'Từ ' : ''}${money(est)}</b>
-                  </div>
-                  <div style="font-size:13.5px;color:#6b7280;margin-top:2px">${esc(s.desc)}</div>
-                </div>
-              </div>`;
-          }).join('')}
-          <button type="button" class="gexPrimaryBtn" data-act="close-sheet" style="margin-top:14px">Tiếp theo</button>
-        </div>
-      </div>`;
-  }
-
-  /* BOTTOM SHEET 2: CHỌN LOẠI XE (ẢNH 5) */
-  function renderVehicleSheet(p) {
-    return `
-      <div class="gexSheetOverlay" data-act="close-sheet">
+      <div class="gexSheetOverlay" data-act="close-modal">
         <div class="gexBottomModal" onclick="event.stopPropagation()">
           <div class="gexSheetHandle"></div>
           <h3 style="font-size:20px;font-weight:800;margin:6px 0 14px">Loại xe</h3>
@@ -656,10 +630,10 @@
       </div>`;
   }
 
-  /* BOTTOM SHEET 3: XEM CHI TIẾT GIÁ CƯỚC */
-  function renderFareSheet(p) {
+  /* MODAL XEM CHI TIẾT GIÁ CƯỚC */
+  function renderFareModal(p) {
     return `
-      <div class="gexSheetOverlay" data-act="close-sheet">
+      <div class="gexSheetOverlay" data-act="close-modal">
         <div class="gexBottomModal" onclick="event.stopPropagation()">
           <div class="gexSheetHandle"></div>
           <h3 style="font-size:19px;font-weight:800;margin:6px 0 12px">Chi tiết giá cước</h3>
@@ -667,12 +641,12 @@
           <div class="gexFareLine"><span>Dịch vụ thêm</span><span>${money(p.addonSum)}</span></div>
           <div class="gexFareLine" style="color:#059669"><span>Ưu đãi áp dụng</span><span>-${money(p.discount)}</span></div>
           <div class="gexFareLine total"><span>Tổng cộng</span><span>${money(p.finalTotal)}</span></div>
-          <button type="button" class="gexPrimaryBtn" data-act="close-sheet" style="margin-top:14px">Đóng</button>
+          <button type="button" class="gexPrimaryBtn" data-act="close-modal" style="margin-top:14px">Đóng</button>
         </div>
       </div>`;
   }
 
-  /* ================== KHỞI TẠO BẢN ĐỒ LEAFLET THỰC TẾ ================== */
+  /* ================== BẢN ĐỒ LEAFLET ================== */
   function initLeafletMap() {
     const el = $('#gexLeafletMap');
     if (!el || typeof L === 'undefined') return;
@@ -680,15 +654,12 @@
       mapInstance.remove();
       mapInstance = null;
     }
-
-    const pt = state.view === 'map'
+    const pt = state.step === 'step2_map'
       ? state.tempPin
       : (state.mapTarget === 'dropoff' ? state.dropoff : state.pickup);
 
     mapInstance = L.map(el, { zoomControl: false }).setView([pt.lat, pt.lng], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(mapInstance);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
 
     const redPin = L.divIcon({
       className: 'gexCustomPin',
@@ -697,9 +668,9 @@
       iconAnchor: [18, 42]
     });
 
-    mapMarker = L.marker([pt.lat, pt.lng], { icon: redPin, draggable: state.view === 'map' }).addTo(mapInstance);
+    mapMarker = L.marker([pt.lat, pt.lng], { icon: redPin, draggable: state.step === 'step2_map' }).addTo(mapInstance);
 
-    if (state.view === 'map') {
+    if (state.step === 'step2_map') {
       mapInstance.on('click', e => updatePinCoords(e.latlng.lat, e.latlng.lng));
       mapMarker.on('dragend', () => {
         const ll = mapMarker.getLatLng();
@@ -715,7 +686,7 @@
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=vi`);
       const data = await res.json();
-      if (data && data.display_name) {
+      if (data?.display_name) {
         const parts = data.display_name.split(',');
         state.tempPin.title = parts.slice(0, 2).join(', ').trim();
         state.tempPin.sub = parts.slice(2, 5).join(', ').trim();
@@ -729,26 +700,20 @@
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', Hồ Chí Minh')}&limit=1&accept-language=vi`);
       const arr = await res.json();
-      if (arr && arr[0]) {
-        const lat = parseFloat(arr[0].lat);
-        const lng = parseFloat(arr[0].lon);
+      if (arr?.[0]) {
         const parts = arr[0].display_name.split(',');
         state.tempPin = {
           title: parts.slice(0, 2).join(', ').trim(),
           sub: parts.slice(2, 5).join(', ').trim(),
-          lat,
-          lng
+          lat: parseFloat(arr[0].lat),
+          lng: parseFloat(arr[0].lon)
         };
         render();
-      } else {
-        showToast('Không tìm thấy địa chỉ, bạn hãy chạm trực tiếp lên bản đồ');
-      }
-    } catch {
-      showToast('Không thể tìm kiếm lúc này');
-    }
+      } else showToast('Không tìm thấy địa chỉ, hãy chạm lên bản đồ');
+    } catch {}
   }
 
-  /* ================== XỬ LÝ SỰ KIỆN CLICK & INPUT ================== */
+  /* ================== ĐIỀU HƯỚNG TỪNG BƯỚC ================== */
   document.addEventListener('click', e => {
     const btn = e.target.closest('[data-act]');
     if (!btn || $('#gnExpressApp')?.hidden) return;
@@ -757,22 +722,25 @@
     if (act === 'exit') closeExpress();
     else if (act === 'close-toast') { state.toast = ''; render(); }
     else if (act === 'open-orders') { closeExpress(); document.querySelector('[data-go="orders"]')?.click(); }
-    else if (act === 'back-home') { state.view = 'home'; state.sheet = null; render(); }
-    else if (act === 'back-map') { state.view = 'map'; render(); }
-    else if (act === 'back-detail') { state.view = 'detail'; render(); }
 
-    else if (act === 'open-map-drop') {
+    // Điều hướng lùi từng bước
+    else if (act === 'back-step1') { state.step = 'step1_home'; render(); }
+    else if (act === 'back-step2') { state.step = 'step2_map'; render(); }
+    else if (act === 'back-step3') { state.step = 'step3_contact'; render(); }
+    else if (act === 'back-step4') { state.step = 'step4_service'; render(); }
+    else if (act === 'back-step5') { state.step = 'step5_detail'; render(); }
+
+    // Bước 1 -> Bước 2
+    else if (act === 'go-step2-drop') {
       state.mapTarget = 'dropoff';
-      state.tempPin = state.dropoff.title
-        ? { ...state.dropoff }
-        : { ...QUICK_PLACES[0] };
-      state.view = 'map';
+      state.tempPin = state.dropoff.title ? { ...state.dropoff } : { ...QUICK_PLACES[0] };
+      state.step = 'step2_map';
       render();
     }
-    else if (act === 'open-map-pick') {
+    else if (act === 'go-step2-pick') {
       state.mapTarget = 'pickup';
       state.tempPin = { ...state.pickup };
-      state.view = 'map';
+      state.step = 'step2_map';
       render();
     }
     else if (act === 'quick-place') {
@@ -780,7 +748,7 @@
       if (pl) {
         state.mapTarget = 'dropoff';
         state.tempPin = { title: pl.title, sub: pl.sub, lat: pl.lat, lng: pl.lng };
-        state.view = 'map';
+        state.step = 'step2_map';
         render();
       }
     }
@@ -791,122 +759,68 @@
       state.dropoff = tmp;
       render();
     }
-    else if (act === 'search-map') {
-      searchMapAddress($('#gexMapSearchInput')?.value || '');
-    }
+    else if (act === 'search-map') searchMapAddress($('#gexMapSearchInput')?.value || '');
     else if (act === 'locate-gps') {
-      if (!navigator.geolocation) return showToast('Trình duyệt không hỗ trợ GPS');
-      navigator.geolocation.getCurrentPosition(
+      navigator.geolocation?.getCurrentPosition(
         pos => updatePinCoords(pos.coords.latitude, pos.coords.longitude),
-        () => showToast('Không lấy được vị trí GPS, hãy chạm vào bản đồ')
+        () => showToast('Không lấy được GPS, hãy chạm lên bản đồ')
       );
     }
-    else if (act === 'confirm-pin') {
-      if (state.mapTarget === 'dropoff') {
-        state.dropoff.title = state.tempPin.title;
-        state.dropoff.sub = state.tempPin.sub;
-        state.dropoff.lat = state.tempPin.lat;
-        state.dropoff.lng = state.tempPin.lng;
-      } else {
-        state.pickup.title = state.tempPin.title;
-        state.pickup.sub = state.tempPin.sub;
-        state.pickup.lat = state.tempPin.lat;
-        state.pickup.lng = state.tempPin.lng;
-      }
-      state.view = 'contact';
+
+    // Bước 2 -> Bước 3
+    else if (act === 'confirm-step2') {
+      const target = state.mapTarget === 'dropoff' ? state.dropoff : state.pickup;
+      target.title = state.tempPin.title;
+      target.sub = state.tempPin.sub;
+      target.lat = state.tempPin.lat;
+      target.lng = state.tempPin.lng;
+      state.step = 'step3_contact';
       render();
     }
-    else if (act === 'save-contact') {
+
+    // Bước 3 -> Bước 4 (Trang chọn gói dịch vụ giao hàng)
+    else if (act === 'confirm-step3') {
       const target = state.mapTarget === 'dropoff' ? state.dropoff : state.pickup;
       target.floor = $('#gexFloorIn')?.value.trim() || '';
       target.name = $('#gexNameIn')?.value.trim() || '';
       target.phone = $('#gexPhoneIn')?.value.trim() || '';
       target.note = $('#gexNoteIn')?.value.trim() || '';
-      state.view = 'detail';
-      state.sheet = 'service'; // Tự bật bảng chọn gói giao giống Ảnh 3
+      state.step = 'step4_service';
       if (state.promoActive) state.toast = 'Đã áp dụng ưu đãi!';
       render();
     }
-    else if (act === 'edit-pickup') {
-      state.mapTarget = 'pickup';
-      state.view = 'contact';
-      render();
-    }
-    else if (act === 'edit-dropoff') {
-      state.mapTarget = 'dropoff';
-      state.view = 'contact';
-      render();
-    }
-    else if (act === 'open-service-sheet') { state.sheet = 'service'; render(); }
-    else if (act === 'open-vehicle-sheet') { state.sheet = 'vehicle'; render(); }
-    else if (act === 'open-fare-sheet') { state.sheet = 'fare'; render(); }
-    else if (act === 'close-sheet') { state.sheet = null; render(); }
 
+    // Bước 4 -> Bước 5 (Chi tiết đơn hàng)
     else if (act === 'pick-service') {
       state.serviceId = btn.dataset.id;
-      if (state.serviceId.startsWith('van_') && state.vehicleId === 'bike') {
-        state.vehicleId = 'van500';
-      } else if (!state.serviceId.startsWith('van_') && state.vehicleId !== 'bike') {
-        state.vehicleId = 'bike';
-      }
+      if (state.serviceId.startsWith('van_') && state.vehicleId === 'bike') state.vehicleId = 'van500';
+      else if (!state.serviceId.startsWith('van_') && state.vehicleId !== 'bike') state.vehicleId = 'bike';
       render();
     }
-    else if (act === 'pick-vehicle') {
-      state.vehicleId = btn.dataset.id;
-      state.sheet = null;
+    else if (act === 'confirm-step4') {
+      state.step = 'step5_detail';
       render();
     }
-    else if (act === 'apply-promo-card') {
-      state.promoActive = true;
-      state.promoCode = btn.dataset.code || 'Ưu Tiên - Giảm 15% 7h-20h';
-      showToast('Đã áp dụng ưu đãi!');
-    }
-    else if (act === 'select-van') {
-      state.serviceId = 'van_priority';
-      state.vehicleId = 'van500';
-      state.mapTarget = 'dropoff';
-      state.tempPin = { ...QUICK_PLACES[0] };
-      state.view = 'map';
-      render();
-    }
-    else if (act === 'toggle-promo') {
-      state.promoActive = !state.promoActive;
-      showToast(state.promoActive ? 'Đã áp dụng ưu đãi!' : 'Đã gỡ mã ưu đãi');
-    }
-    else if (act === 'open-item-detail') {
-      state.view = 'item';
-      render();
-    }
-    else if (act === 'pick-size') {
-      state.item.size = btn.dataset.val;
-      render();
-    }
-    else if (act === 'pick-cat') {
-      state.item.cat = btn.dataset.val;
-      render();
-    }
-    else if (act === 'show-prohibited') {
-      alert('Danh mục hàng cấm vận chuyển:\n• Chất dễ cháy nổ, vũ khí, pháo\n• Chất cấm, hàng quốc cấm\n• Tiền mặt, trang sức giá trị lớn không khai báo\n• Động vật sống hoặc hàng tươi sống không đóng gói kín');
-    }
-    else if (act === 'save-item') {
-      state.item.confirmed = true;
-      state.view = 'detail';
-      render();
-    }
-    else if (act === 'save-draft') {
-      localStorage.setItem('gn_express_draft', JSON.stringify({ pickup: state.pickup, dropoff: state.dropoff, item: state.item }));
-      showToast('Đã lưu đơn hàng vào mục nháp');
-    }
-    else if (act === 'go-review') {
-      state.view = 'review';
-      render();
-    }
-    else if (act === 'share-trip') {
-      showToast('Đã sao chép liên kết theo dõi đơn hàng!');
-    }
-    else if (act === 'submit-order') {
-      createExpressOrder();
-    }
+
+    // Các thao tác trong Bước 5
+    else if (act === 'edit-pickup') { state.mapTarget = 'pickup'; state.step = 'step3_contact'; render(); }
+    else if (act === 'edit-dropoff') { state.mapTarget = 'dropoff'; state.step = 'step3_contact'; render(); }
+    else if (act === 'open-vehicle-modal') { state.modal = 'vehicle'; render(); }
+    else if (act === 'open-fare-modal') { state.modal = 'fare'; render(); }
+    else if (act === 'close-modal') { state.modal = null; render(); }
+    else if (act === 'pick-vehicle') { state.vehicleId = btn.dataset.id; state.modal = null; render(); }
+    else if (act === 'go-step5b-item') { state.step = 'step5b_item'; render(); }
+    else if (act === 'pick-size') { state.item.size = btn.dataset.val; render(); }
+    else if (act === 'pick-cat') { state.item.cat = btn.dataset.val; render(); }
+    else if (act === 'confirm-step5b') { state.item.confirmed = true; state.step = 'step5_detail'; render(); }
+    else if (act === 'go-step6-review') { state.step = 'step6_review'; render(); }
+    else if (act === 'toggle-promo') { state.promoActive = !state.promoActive; showToast(state.promoActive ? 'Đã áp dụng ưu đãi!' : 'Đã gỡ mã ưu đãi'); }
+    else if (act === 'apply-promo-card') { state.promoActive = true; state.promoCode = btn.dataset.code; showToast('Đã áp dụng ưu đãi!'); }
+    else if (act === 'select-van') { state.serviceId = 'van_priority'; state.vehicleId = 'van500'; state.mapTarget = 'dropoff'; state.tempPin = { ...QUICK_PLACES[0] }; state.step = 'step2_map'; render(); }
+    else if (act === 'save-draft') { showToast('Đã lưu đơn hàng vào mục nháp'); }
+    else if (act === 'share-trip') { showToast('Đã sao chép liên kết theo dõi đơn hàng!'); }
+    else if (act === 'show-prohibited') { alert('Hàng cấm: Chất cháy nổ, vũ khí, chất cấm, tiền mặt giá trị lớn, động vật sống.'); }
+    else if (act === 'submit-order') createExpressOrder();
   });
 
   document.addEventListener('change', e => {
@@ -919,10 +833,7 @@
     }
     if (t.id === 'gexPhotoFile' && t.files?.[0]) {
       const r = new FileReader();
-      r.onload = () => {
-        state.item.photo = r.result;
-        render();
-      };
+      r.onload = () => { state.item.photo = r.result; render(); };
       r.readAsDataURL(t.files[0]);
     }
   });
@@ -979,11 +890,7 @@
       <div class="gexSuccessCard">
         <div class="gexCheckWrap">
           <div class="gexRadarRing"></div>
-          <div class="gexCheckCircle">
-            <svg class="gexCheckSvg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 6L9 17l-5-5"></path>
-            </svg>
-          </div>
+          <div class="gexCheckCircle">✓</div>
         </div>
         <h3 style="margin:0 0 6px;font-size:21px;font-weight:800">Đặt giao hàng thành công!</h3>
         <p style="margin:0;color:#4b5563;font-size:14px">Mã đơn <b>#${orderId}</b> • Cước phí <b>${money(p.finalTotal)}</b></p>
@@ -1003,9 +910,8 @@
   }
 
   function openExpress() {
-    syncUserDefaults();
-    state.view = 'home';
-    state.sheet = null;
+    state.step = 'step1_home';
+    state.modal = null;
     const root = ensureRoot();
     root.hidden = false;
     document.body.classList.add('noScroll');
@@ -1018,12 +924,10 @@
     document.body.classList.remove('noScroll');
   }
 
-  // Bắt sự kiện khi bấm vào nút "Giao hàng" ở trang chủ hoặc menu
   document.addEventListener('click', e => {
     const trigger = e.target.closest('[data-go="express"], [data-svc="express"], .qk');
     if (!trigger) return;
-    const label = trigger.textContent.trim().toLowerCase();
-    if (trigger.dataset.go === 'express' || trigger.dataset.svc === 'express' || label.includes('giao hàng')) {
+    if (trigger.dataset.go === 'express' || trigger.dataset.svc === 'express' || trigger.textContent.trim().toLowerCase().includes('giao hàng')) {
       e.preventDefault();
       e.stopImmediatePropagation();
       openExpress();
@@ -1032,4 +936,3 @@
 
   window.openGoExpress = openExpress;
 })();
-
