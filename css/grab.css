@@ -345,6 +345,7 @@ body.gx .top .logo span{color:#8ff0b8}
 .gexAddonRow:last-child { border-bottom: none; }
 .gexAddonRow input[type="checkbox"] { width: 20px; height: 20px; accent-color: #00b14f; margin-top: 2px; }
 
+
 .gexSizePills { display: flex; gap: 10px; margin-top: 8px; }
 .gexSizeBtn {
   width: 44px; height: 44px; border-radius: 50%; border: none; background: #f1f5f9;
@@ -490,3 +491,26 @@ body.gx .top .logo span{color:#8ff0b8}
 @keyframes gexPulseRing { 0% { transform: scale(0.85); opacity: 0.9; } 100% { transform: scale(1.45); opacity: 0; } }
 @keyframes gexDrawCheck { to { stroke-dashoffset: 0; } }
 @keyframes gexBlink { from { opacity: 0.35; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+/* Sửa lỗi chấm chuyển slide (.heroDots) đè lên nút Đặt món ngay trên điện thoại */
+@media (max-width: 820px) {
+  body.gx .hero {
+    --hh: 235px; /* Tăng nhẹ chiều cao banner cho thoáng chữ và nút */
+  }
+  body.gx .heroIn {
+    padding-top: 20px !important;
+    padding-bottom: 42px !important; /* Chừa khoảng trống bên dưới nút cho dải chấm */
+  }
+  body.gx .heroCta {
+    margin-top: 12px !important;
+  }
+  body.gx .hero .heroBtn.btn {
+    height: 40px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+  }
+  body.gx .heroDots {
+    bottom: 12px !important; /* Hạ dải chấm sát xuống mép dưới banner, tách hẳn khỏi nút */
+    z-index: 3;
+  }
+}
