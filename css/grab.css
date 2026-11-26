@@ -514,3 +514,9 @@ body.gx .top .logo span{color:#8ff0b8}
     z-index: 3;
   }
 }
+/* Ẩn hoàn toàn các nút chuyển slide (.heroDots và .heroNav) trong carousel banner */
+.heroDots,
+.heroNav {
+  display: none !important;
+}
+
