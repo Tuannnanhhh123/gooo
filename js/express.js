@@ -1,5 +1,4 @@
-
-/* [AI] GoNow Express — Giao diện 5 bước chuẩn GrabExpress (Độc lập hoàn toàn với HTML/CSS cũ) */
+/* [AI] GoNow Express — Tách chuẩn 5 trang độc lập & Chặn hoàn toàn trang Express cũ */
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
 
@@ -36,15 +35,15 @@
   ];
 
   const ITEM_CATS = [
-    { label: 'Thực phẩm', icon: '🍴' },
-    { label: 'Quần áo', icon: '👕' },
-    { label: 'Điện tử', icon: '📱' },
-    { label: 'Tài liệu', icon: '📄' },
-    { label: 'Khác', icon: '📦' }
+    { id: 'food', label: 'Thực phẩm', icon: '🍴' },
+    { id: 'clothes', label: 'Quần áo', icon: '👕' },
+    { id: 'elec', label: 'Điện tử', icon: '📱' },
+    { id: 'doc', label: 'Tài liệu', icon: '📄' },
+    { id: 'other', label: 'Khác', icon: '📦' }
   ];
 
   const state = {
-    step: 'step1_home', // step1_home -> step2_map -> step3_contact -> step4_service -> step5_detail -> step5b_item -> step6_review
+    step: 'step1_home', // step1_home | step2_map | step3_contact | step4_service | step5_detail | step5b_item | step6_review
     modal: null,
     toast: '',
     pickup: { title: '86 Street No.27', sub: 'P.Tân Quy, Quận 7, TP.Hồ Chí Minh', floor: '', name: 'Tuấn Anh', phone: '+84343758848', note: '', lat: 10.7412, lng: 106.7128 },
@@ -65,260 +64,34 @@
   const money = n => Math.round(n).toLocaleString('vi-VN') + 'đ';
   const esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
-  function injectStyles() {
-    if ($('#gexIsolatedStyles')) return;
-    const st = document.createElement('style');
-    st.id = 'gexIsolatedStyles';
-    st.textContent = `
-      #gexV2Root {
-        position: fixed !important;
-        inset: 0 !important;
-        z-index: 99999 !important;
-        background: #f5f7f9 !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        color: #111827 !important;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      #gexV2Root[hidden] { display: none !important; }
-      #gexV2Root * { box-sizing: border-box; }
-      .gex2Shell {
-        position: relative;
-        width: 100%;
-        max-width: 520px;
-        height: 100%;
-        margin: 0 auto;
-        background: #f5f7f9;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .gex2Scroll {
-        flex: 1;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 115px;
-      }
-      /* Bước 1: Trang chủ */
-      .gex2Hero {
-        background: linear-gradient(180deg, #dcfce7 0%, #bbf7d0 100%);
-        padding: 14px 18px 46px;
-      }
-      .gex2TopBar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 14px;
-      }
-      .gex2RoundBtn {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.9);
-        border: none;
-        font-size: 18px;
-        font-weight: 700;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-      }
-      .gex2HeroRow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .gex2HeroRow h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; color: #064e3b; }
-      .gex2HeroRow p { margin: 0; font-size: 14.5px; font-weight: 600; color: #065f46; }
-      .gex2RouteCard {
-        background: #fff;
-        margin: -30px 16px 0;
-        border-radius: 18px;
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      }
-      .gex2Dots { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-      .gex2DotB { width: 12px; height: 12px; border-radius: 50%; border: 3px solid #2563eb; background: #fff; }
-      .gex2DotL { width: 2px; height: 26px; border-left: 2px dashed #cbd5e1; }
-      .gex2DotR { width: 12px; height: 12px; border-radius: 50%; border: 3px solid #ef4444; background: #fff; }
-      .gex2AddrRow { padding: 7px 0; cursor: pointer; }
-      .gex2AddrRow + .gex2AddrRow { border-top: 1px solid #f1f5f9; }
-      .gex2AddrVal { font-size: 15.5px; font-weight: 700; color: #111827; }
-      .gex2AddrPh { font-size: 15.5px; font-weight: 600; color: #6b7280; }
-      .gex2Chips {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding: 14px 16px 4px;
-        scrollbar-width: none;
-      }
-      .gex2Chips::-webkit-scrollbar { display: none; }
-      .gex2Chip {
-        flex-shrink: 0;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 10px 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-align: left;
-        cursor: pointer;
-      }
-      .gex2Chip small { display: block; font-size: 11.5px; color: #6b7280; }
-      .gex2Chip b { font-size: 14px; color: #111827; }
-      .gex2Sec { padding: 14px 16px 0; }
-      .gex2Sec h3 { margin: 0 0 10px; font-size: 18px; font-weight: 800; }
-      .gex2PromoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .gex2PromoCard {
-        border-radius: 16px;
-        padding: 13px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 6px;
-        cursor: pointer;
-      }
-      .gex2PromoCard b { display: block; font-size: 14.5px; margin-bottom: 3px; }
-      .gex2PromoCard span { font-size: 12px; color: #4b5563; line-height: 1.3; display: block; }
-      /* Header & Card dùng chung */
-      .gex2Header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        background: #ecfdf5;
-        border-bottom: 1px solid #d1fae5;
-      }
-      .gex2Header h2 { margin: 0; font-size: 18px; font-weight: 800; }
-      .gex2Card {
-        background: #fff;
-        margin: 12px 16px;
-        border-radius: 16px;
-        padding: 14px 16px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-      }
-      .gex2RowLink {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 0;
-        border-top: 1px solid #f1f5f9;
-        cursor: pointer;
-      }
-      .gex2RowLink:first-child { border-top: none; padding-top: 2px; }
-      .gex2IcoBox {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: #f3f4f6;
-        display: grid;
-        place-items: center;
-        font-size: 20px;
-        flex-shrink: 0;
-      }
-      .gex2Btn {
-        width: 100%;
-        height: 48px;
-        border: none;
-        border-radius: 999px;
-        background: #00b14f;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .gex2Btn:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
-      .gex2Footer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #fff;
-        padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
-        box-shadow: 0 -6px 20px rgba(0,0,0,0.07);
-        z-index: 20;
-      }
-      /* Map & Form */
-      .gex2MapWrap { position: relative; flex: 1; display: flex; flex-direction: column; }
-      .gex2MapDiv { width: 100%; height: 55%; z-index: 1; }
-      .gex2MapFloatBack {
-        position: absolute; top: 14px; left: 14px; z-index: 30;
-        width: 40px; height: 40px; border-radius: 50%; background: #fff;
-        border: none; font-size: 18px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-      }
-      .gex2Sheet {
-        position: relative; z-index: 20; margin-top: -18px; flex: 1;
-        background: #fff; border-radius: 22px 22px 0 0; padding: 12px 18px 20px;
-        box-shadow: 0 -8px 24px rgba(0,0,0,0.1); overflow-y: auto;
-      }
-      .gex2Handle { width: 40px; height: 4px; border-radius: 99px; background: #d1d5db; margin: 0 auto 12px; }
-      .gex2Input {
-        width: 100%; height: 44px; border: 1.5px solid #e5e7eb; border-radius: 12px;
-        padding: 0 12px; font-size: 15px; margin-top: 4px;
-      }
-      .gex2Lbl { display: block; font-size: 13.5px; font-weight: 700; color: #374151; margin-top: 12px; }
-      /* Gói dịch vụ */
-      .gex2SvcItem {
-        display: flex; align-items: center; gap: 12px; padding: 13px;
-        border: 1.5px solid #e5e7eb; border-radius: 14px; margin-bottom: 10px; cursor: pointer;
-      }
-      .gex2SvcItem.active { border-color: #00b14f; background: #f0fdf4; }
-      /* Addon checkbox */
-      .gex2Addon {
-        display: flex; align-items: center; gap: 12px; padding: 11px 0;
-        border-bottom: 1px solid #f1f5f9; cursor: pointer;
-      }
-      .gex2Addon:last-child { border-bottom: none; }
-      .gex2Addon input { width: 20px; height: 20px; accent-color: #00b14f; }
-      /* Size & Tag pills */
-      .gex2Pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-      .gex2PillBtn {
-        padding: 9px 15px; border-radius: 999px; border: 1.5px solid #e5e7eb;
-        background: #f9fafb; font-weight: 700; font-size: 14px; cursor: pointer;
-      }
-      .gex2PillBtn.active { background: #065f46; color: #fff; border-color: #065f46; }
-      /* Modal overlay */
-      .gex2ModalBg {
-        position: absolute; inset: 0; background: rgba(0,0,0,0.45);
-        z-index: 50; display: flex; flex-direction: column; justify-content: flex-end;
-      }
-      .gex2ModalBox {
-        background: #fff; border-radius: 22px 22px 0 0; padding: 14px 18px 24px;
-        max-height: 82%; overflow-y: auto;
-      }
-      .gex2Toast {
-        position: absolute; top: 12px; left: 14px; right: 14px; z-index: 60;
-        background: #14532d; color: #fff; padding: 11px 14px; border-radius: 12px;
-        display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
-      }
-    `;
-    document.head.appendChild(st);
-  }
-
   function calcDistanceKm() {
     if (!state.dropoff.title) return 5.2;
     const R = 6371;
     const dLat = (state.dropoff.lat - state.pickup.lat) * Math.PI / 180;
     const dLon = (state.dropoff.lng - state.pickup.lng) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(state.pickup.lat * Math.PI / 180) * Math.cos(state.dropoff.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return Math.max(1.5, +(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 1.25).toFixed(1));
+    const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.max(1.5, +(d * 1.25).toFixed(1));
   }
 
   function calcPricing() {
     const km = calcDistanceKm();
     const svc = SERVICES.find(s => s.id === state.serviceId) || SERVICES[0];
     const veh = VEHICLES.find(v => v.id === state.vehicleId) || VEHICLES[0];
-    let baseRaw = Math.round(((svc.base + km * 4800) * (veh.id === 'bike' ? 1 : veh.mult * 0.78)) / 1000) * 1000;
+
+    let baseRaw = (svc.base + km * 4800) * (veh.id === 'bike' ? 1 : veh.mult * 0.78);
+    baseRaw = Math.round(baseRaw / 1000) * 1000;
+
     let addonSum = 0;
-    state.addons.forEach(id => { const a = ADDONS.find(x => x.id === id); if (a) addonSum += a.price; });
+    state.addons.forEach(id => {
+      const a = ADDONS.find(x => x.id === id);
+      if (a) addonSum += a.price;
+    });
+
     const originalTotal = baseRaw + addonSum;
     const discount = state.promoActive ? Math.round((baseRaw * 0.15) / 1000) * 1000 : 0;
     const finalTotal = Math.max(15000, originalTotal - discount);
+
     return { km, svc, veh, baseRaw, addonSum, originalTotal, discount, finalTotal };
   }
 
@@ -328,12 +101,11 @@
   }
 
   function ensureRoot() {
-    injectStyles();
-    let root = $('#gexV2Root');
+    let root = $('#gnExpressWizard');
     if (!root) {
       root = document.createElement('div');
-      root.id = 'gexV2Root';
-      root.hidden = true;
+      root.id = 'gnExpressWizard';
+      root.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#f3f4f6;display:none;flex-direction:column;overflow:hidden;';
       document.body.appendChild(root);
     }
     return root;
@@ -342,361 +114,491 @@
   function showToast(msg) {
     state.toast = msg;
     render();
-    setTimeout(() => { if (state.toast === msg) { state.toast = ''; render(); } }, 2800);
+    setTimeout(() => {
+      if (state.toast === msg) { state.toast = ''; render(); }
+    }, 3000);
   }
 
-  /* ================== RENDER TỪNG BƯỚC ================== */
+  /* ================== RENDER TỪNG TRANG ĐỘC LẬP ================== */
   function render() {
     const root = ensureRoot();
-    if (root.hidden) return;
-    const p = calcPricing();
+    if (root.style.display === 'none') return;
 
-    let body = '';
-    if (state.step === 'step1_home') body = renderStep1Home();
-    else if (state.step === 'step2_map') body = renderStep2Map();
-    else if (state.step === 'step3_contact') body = renderStep3Contact();
-    else if (state.step === 'step4_service') body = renderStep4Service(p);
-    else if (state.step === 'step5_detail') body = renderStep5Detail(p);
-    else if (state.step === 'step5b_item') body = renderStep5bItem();
-    else if (state.step === 'step6_review') body = renderStep6Review(p);
+    const p = calcPricing();
+    let stepHtml = '';
+
+    switch (state.step) {
+      case 'step1_home':    stepHtml = renderStep1Home(); break;
+      case 'step2_map':     stepHtml = renderStep2Map(); break;
+      case 'step3_contact': stepHtml = renderStep3Contact(); break;
+      case 'step4_service': stepHtml = renderStep4Service(p); break;
+      case 'step5_detail':  stepHtml = renderStep5Detail(p); break;
+      case 'step5b_item':   stepHtml = renderStep5bItem(); break;
+      case 'step6_review':  stepHtml = renderStep6Review(p); break;
+    }
 
     root.innerHTML = `
-      <div class="gex2Shell">
-        ${state.toast ? `<div class="gex2Toast"><span>✓</span><span style="flex:1">${esc(state.toast)}</span><span data-act="close-toast" style="cursor:pointer">✕</span></div>` : ''}
-        ${body}
+      <div class="gexShell" style="width:100%;height:100%;max-width:480px;margin:0 auto;position:relative;display:flex;flex-direction:column;background:#f8fafc;">
+        ${state.toast ? `
+          <div class="gexTopToast">
+            <span class="gexToastCheck">✓</span>
+            <span style="flex:1">${esc(state.toast)}</span>
+            <button type="button" data-act="close-toast">✕</button>
+          </div>` : ''}
+        ${stepHtml}
         ${state.modal === 'vehicle' ? renderVehicleModal(p) : ''}
         ${state.modal === 'fare' ? renderFareModal(p) : ''}
       </div>`;
 
-    if (state.step === 'step2_map' || state.step === 'step3_contact') setTimeout(initLeafletMap, 30);
+    if (state.step === 'step2_map' || state.step === 'step3_contact') {
+      setTimeout(initLeafletMap, 30);
+    }
   }
 
-  /* BƯỚC 1: TRANG CHỦ */
+  /* TRANG 1: TRANG CHỦ EXPRESS */
   function renderStep1Home() {
     return `
-      <div class="gex2Scroll" style="padding-bottom:24px">
-        <div class="gex2Hero">
-          <div class="gex2TopBar">
-            <button type="button" class="gex2RoundBtn" data-act="exit">←</button>
-            <span style="font-size:12.5px;font-weight:700;background:#fff;padding:5px 12px;border-radius:99px;color:#065f46">Bước 1/5 • Chọn điểm giao</span>
-            <button type="button" class="gex2RoundBtn" data-act="open-orders">📋</button>
+      <div class="gexScroll" style="flex:1;overflow-y:auto;padding-bottom:28px">
+        <div class="gexHero">
+          <div class="gexTopBar">
+            <button type="button" class="gexIconBtn" data-act="exit" aria-label="Quay lại">←</button>
+            <span style="font-size:12.5px;font-weight:700;color:#065f46;background:#fff;padding:4px 12px;border-radius:999px">Trang 1/5 • Chọn điểm giao</span>
+            <button type="button" class="gexIconBtn" data-act="open-orders" title="Đơn giao hàng">📋</button>
           </div>
-          <div class="gex2HeroRow">
-            <div>
+          <div class="gexHeroRow">
+            <div style="min-width:0">
               <h2>Cần ship hàng gấp?</h2>
-              <p data-act="go-step2-drop" style="cursor:pointer">Đặt GoExpress nhận ưu đãi ngay! ›</p>
+              <p data-act="go-step2-drop" style="cursor:pointer">Đặt GoExpress nhận ưu đãi cuối ngay! ›</p>
             </div>
-            <div style="font-size:44px">🛵📦</div>
+            <div class="gexMascot">🛵📦</div>
           </div>
         </div>
 
-        <div class="gex2RouteCard">
-          <div class="gex2Dots">
-            <span class="gex2DotB"></span>
-            <span class="gex2DotL"></span>
-            <span class="gex2DotR"></span>
+        <div class="gexRouteCard">
+          <div class="gexDots">
+            <span class="gexDotBlue"></span>
+            <span class="gexDotLine"></span>
+            <span class="gexDotRed"></span>
           </div>
-          <div style="flex:1;min-width:0">
-            <div class="gex2AddrRow" data-act="go-step2-pick">
-              <div class="gex2AddrVal">${esc(state.pickup.title)}</div>
+          <div class="gexRouteInputs">
+            <div class="gexAddrRow" data-act="go-step2-pick">
+              <div class="gexAddrTitle">${esc(state.pickup.title)}</div>
             </div>
-            <div class="gex2AddrRow" data-act="go-step2-drop">
-              ${state.dropoff.title ? `<div class="gex2AddrVal">${esc(state.dropoff.title)}</div>` : `<div class="gex2AddrPh">Giao đến đâu?</div>`}
+            <div class="gexAddrRow" data-act="go-step2-drop">
+              ${state.dropoff.title
+                ? `<div class="gexAddrTitle">${esc(state.dropoff.title)}</div>`
+                : `<div class="gexAddrPlaceholder">Giao đến đâu?</div>`}
             </div>
           </div>
-          <button type="button" data-act="swap-addr" style="background:none;border:none;font-size:18px;cursor:pointer">⇅</button>
+          <button type="button" class="gexSwapBtn" data-act="swap-addr">⇅</button>
         </div>
 
-        <div class="gex2Chips">
-          ${QUICK_PLACES.map((pl, i) => `
-            <button type="button" class="gex2Chip" data-act="quick-place" data-idx="${i}">
-              <div><small>Giao đến</small><b>${esc(pl.short)}</b></div>
-              <span>📍</span>
-            </button>`).join('')}
+        <div class="gexChips">
+          ${QUICK_PLACES.map((pl, idx) => `
+            <button type="button" class="gexChip" data-act="quick-place" data-idx="${idx}">
+              <div>
+                <small>Giao đến</small>
+                <b>${esc(pl.short)}</b>
+              </div>
+              <span class="gexChipPin">📍</span>
+            </button>
+          `).join('')}
         </div>
 
-        <div class="gex2Sec">
+        <div class="gexSec">
           <h3>Bạn có thể thích</h3>
-          <div class="gex2PromoGrid">
-            <div class="gex2PromoCard" style="background:#fdf2f2" data-act="apply-promo" data-code="Hội Chủ Shop - Giảm 20%">
+          <div class="gexPromoGrid">
+            <div class="gexPromoCard" style="background:#fdf2f2" data-act="apply-promo-card" data-code="Hội Chủ Shop - Giảm 20% Ưu Tiên">
               <div><b>Hội Chủ Shop</b><span>Giảm 20%* giá cước đơn Ưu Tiên</span></div>
-              <span style="font-size:24px">🏪</span>
+              <span class="gexBadgeShop">HỘI CHỦ SHOP</span>
             </div>
-            <div class="gex2PromoCard" style="background:#eef8fc" data-act="apply-promo" data-code="Đổi GoPoints - Giảm 15.000đ">
-              <div><b>Đổi mã ưu đãi</b><span>Đổi điểm sang mã ưu đãi GE</span></div>
-              <span style="font-size:24px">🪙</span>
+            <div class="gexPromoCard" style="background:#eef8fc" data-act="apply-promo-card" data-code="Đổi điểm thưởng - Giảm 15.000đ">
+              <div><b>Đổi mã ưu đãi</b><span>Đổi GoPoints sang mã ưu đãi GE</span></div>
+              <span class="gexCoin">G</span>
             </div>
-            <div class="gex2PromoCard" style="background:#eafaf1" data-act="apply-promo" data-code="Đi đơn có quà - Trợ giá 15%">
+            <div class="gexPromoCard" style="background:#eafaf1" data-act="apply-promo-card" data-code="Đi đơn có quà - Trợ giá 15%">
               <div><b>Đi đơn có quà</b><span>Đi đơn càng nhiều, trợ giá càng hời</span></div>
-              <span style="font-size:24px">🎁</span>
+              <span style="font-size:26px">🎁</span>
             </div>
-            <div class="gex2PromoCard" style="background:#fdf2f4" data-act="select-van">
+            <div class="gexPromoCard" style="background:#fdf2f4" data-act="select-van">
               <div><b>Xe Tải Van</b><span>Giảm lên đến 50%*</span></div>
-              <span style="font-size:24px">🚐</span>
+              <span style="font-size:26px">🚐</span>
             </div>
+          </div>
+        </div>
+
+        <div class="gexSec">
+          <h3>Khám phá thêm</h3>
+          <div class="gexExploreCard" data-act="go-step2-drop">
+            <div class="gexExploreIco">🛍️</div>
+            <div><b>GoExpress Mua hộ</b><p>Ngồi ở nhà, cần gì GoExpress mua hộ</p></div>
           </div>
         </div>
       </div>`;
   }
 
-  /* BƯỚC 2: BẢN ĐỒ */
+  /* TRANG 2: BẢN ĐỒ GHIM VỊ TRÍ */
   function renderStep2Map() {
     const isDrop = state.mapTarget === 'dropoff';
     return `
-      <div class="gex2MapWrap">
-        <div id="gexLeafletMap" class="gex2MapDiv"></div>
-        <button type="button" class="gex2MapFloatBack" data-act="back-step1">←</button>
-        <div class="gex2Sheet">
-          <div class="gex2Handle"></div>
-          <div style="display:flex;gap:8px;margin-bottom:10px">
-            <input type="text" id="gexMapSearchInput" class="gex2Input" style="margin:0" placeholder="Tìm địa chỉ..." value="${esc(state.tempPin.title)}">
-            <button type="button" data-act="search-map" style="background:#00b14f;color:#fff;border:none;border-radius:12px;padding:0 16px;font-weight:700">Tìm</button>
+      <div class="gexMapPage" style="flex:1;display:flex;flex-direction:column;position:relative">
+        <div id="gexLeafletMap" class="gexMapCanvas" style="height:56%"></div>
+        <button type="button" class="gexMapBack" data-act="back-step1">←</button>
+        <div class="gexStepPillFloat">Trang 2/5 • Ghim vị trí trên bản đồ</div>
+        <button type="button" class="gexMapGps" data-act="locate-gps" title="Vị trí hiện tại">⌖</button>
+
+        <div class="gexMapSheet">
+          <div class="gexSheetHandle"></div>
+          <div class="gexMapSearchBox">
+            <input type="text" id="gexMapSearchInput" class="gexMapSearchIn" placeholder="Nhập địa chỉ cần tìm..." value="${esc(state.tempPin.title)}">
+            <button type="button" class="gexMapSearchBtn" data-act="search-map">Tìm</button>
           </div>
-          <div style="font-size:16px;font-weight:800">${esc(state.tempPin.title)} ✎</div>
-          <div style="font-size:13px;color:#6b7280;margin:3px 0 12px">${esc(state.tempPin.sub)}</div>
-          <div style="background:#f0fdf4;padding:11px 12px;border-radius:12px;font-size:13.5px;font-weight:700;margin-bottom:14px">
-            📍 Điểm Đón GoBike / Cổng chính
+          <div class="gexMapPinTitle">${esc(state.tempPin.title)} ✎</div>
+          <div class="gexMapPinSub">${esc(state.tempPin.sub)}</div>
+          <div class="gexMapSubSpot">
+            <span>📍</span>
+            <b style="flex:1">Điểm Đón GoBike / Cổng chính</b>
+            <span style="color:#6b7280">⋮</span>
           </div>
-          <button type="button" class="gex2Btn" data-act="confirm-step2">
+          <button type="button" class="gexPrimaryBtn" data-act="confirm-step2">
             ${isDrop ? 'Chọn điểm đến này' : 'Chọn điểm lấy hàng này'}
           </button>
         </div>
       </div>`;
   }
 
-  /* BƯỚC 3: THÔNG TIN LIÊN LẠC */
+  /* TRANG 3: THÔNG TIN ĐIỂM GIAO / LẤY HÀNG */
   function renderStep3Contact() {
     const isDrop = state.mapTarget === 'dropoff';
     const data = isDrop ? state.dropoff : state.pickup;
     const valid = data.name.trim().length >= 2 && data.phone.trim().length >= 8;
-    return `
-      <div class="gex2MapWrap">
-        <div id="gexLeafletMap" class="gex2MapDiv" style="height:24%"></div>
-        <button type="button" class="gex2MapFloatBack" data-act="back-step2">←</button>
-        <div class="gex2Sheet">
-          <div class="gex2Handle"></div>
-          <h3 style="margin:0 0 8px;font-size:19px;font-weight:800">${isDrop ? 'Thông tin điểm giao hàng' : 'Thông tin điểm lấy hàng'}</h3>
-          <label class="gex2Lbl">Địa chỉ</label>
-          <div class="gex2Input" style="display:flex;align-items:center;justify-content:space-between;background:#f9fafb" data-act="back-step2">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(data.title)}</span><span>›</span>
-          </div>
-          <label class="gex2Lbl">Số tầng, số toà nhà</label>
-          <input type="text" class="gex2Input" id="gexFloorIn" placeholder="Thêm số tầng hoặc số căn hộ" value="${esc(data.floor)}">
-          <label class="gex2Lbl">Tên người liên lạc *</label>
-          <input type="text" class="gex2Input" id="gexNameIn" placeholder="Nhập tên" value="${esc(data.name)}">
-          <label class="gex2Lbl">Số điện thoại *</label>
-          <input type="tel" class="gex2Input" id="gexPhoneIn" placeholder="Nhập số điện thoại" value="${esc(data.phone)}">
-          <label class="gex2Lbl">Ghi chú cho tài xế</label>
-          <input type="text" class="gex2Input" id="gexNoteIn" placeholder="Ghi chú cho tài xế" value="${esc(data.note)}">
-          <button type="button" class="gex2Btn" id="gexContactConfirmBtn" data-act="confirm-step3" style="margin-top:16px" ${valid ? '' : 'disabled'}>Xác nhận</button>
-        </div>
-      </div>`;
-  }
 
-  /* BƯỚC 4: CHỌN DỊCH VỤ GIAO HÀNG (TRANG RIÊNG) */
-  function renderStep4Service(p) {
     return `
-      <div class="gex2Header">
-        <button type="button" class="gex2RoundBtn" data-act="back-step3">←</button>
-        <h2>Chọn dịch vụ giao</h2>
-        <span style="font-size:12px;font-weight:700;color:#059669">Bước 4/5</span>
-      </div>
-      <div class="gex2Scroll" style="padding:14px 16px 100px;background:#fff">
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px">
-          <div><b style="color:#2563eb">● Từ:</b> ${esc(state.pickup.title)} (${esc(state.pickup.name)})</div>
-          <div style="margin-top:4px"><b style="color:#ef4444">● Đến:</b> ${esc(state.dropoff.title)} (${esc(state.dropoff.name)})</div>
-        </div>
-        <h3 style="margin:0 0 12px;font-size:18px;font-weight:800">Bạn muốn chọn dịch vụ giao nào?</h3>
-        ${SERVICES.map(s => {
-          const active = s.id === state.serviceId;
-          const est = Math.round(((s.base + p.km * 4800) * (s.isVan ? 1 : 0.85)) / 1000) * 1000;
-          return `
-            <div class="gex2SvcItem ${active ? 'active' : ''}" data-act="pick-service" data-id="${s.id}">
-              <div class="gex2IcoBox" style="background:${s.color}18;color:${s.color}">${s.icon}</div>
-              <div style="flex:1">
-                <div style="display:flex;justify-content:space-between">
-                  <b style="font-size:15.5px">${esc(s.name)}</b>
-                  <b style="font-size:15.5px">${s.id === 'saver' ? 'Từ ' : ''}${money(est)}</b>
-                </div>
-                <div style="font-size:13px;color:#6b7280;margin-top:2px">${esc(s.desc)}</div>
-              </div>
-            </div>`;
-        }).join('')}
-      </div>
-      <div class="gex2Footer">
-        <button type="button" class="gex2Btn" data-act="confirm-step4">Tiếp theo</button>
-      </div>`;
-  }
+      <div class="gexMapPage" style="flex:1;display:flex;flex-direction:column;position:relative">
+        <div id="gexLeafletMap" class="gexMapCanvas" style="height:26%"></div>
+        <button type="button" class="gexMapBack" data-act="back-step2">←</button>
+        <div class="gexStepPillFloat">Trang 3/5 • Thông tin liên lạc</div>
 
-  /* BƯỚC 5: CHI TIẾT ĐƠN HÀNG */
-  function renderStep5Detail(p) {
-    return `
-      <div class="gex2Header">
-        <button type="button" class="gex2RoundBtn" data-act="back-step4">←</button>
-        <h2>Chi tiết đơn hàng</h2>
-        <button type="button" class="gex2RoundBtn" data-act="share-trip">🔗</button>
-      </div>
-      <div class="gex2Scroll">
-        <div class="gex2Card">
-          <div style="display:flex;gap:12px;align-items:center;padding-bottom:10px">
-            <div class="gex2Dots"><span class="gex2DotB"></span><span class="gex2DotL"></span><span class="gex2DotR"></span></div>
-            <div style="flex:1;min-width:0">
-              <div data-act="edit-pickup" style="cursor:pointer">
-                <div style="font-weight:700;font-size:14.5px">${esc(state.pickup.title)}</div>
-                <div style="font-size:12.5px;color:#6b7280">${esc(state.pickup.name)} • ${esc(state.pickup.phone)}</div>
-              </div>
-              <div data-act="edit-dropoff" style="cursor:pointer;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9">
-                <div style="font-weight:700;font-size:14.5px">${esc(state.dropoff.title)}</div>
-                <div style="font-size:12.5px;color:#6b7280">${esc(state.dropoff.name)} • ${esc(state.dropoff.phone)}</div>
-              </div>
-            </div>
-          </div>
+        <div class="gexMapSheet" style="max-height:80%;overflow-y:auto">
+          <div class="gexSheetHandle"></div>
+          <h3 style="font-size:20px;font-weight:800;margin:0 0 12px">
+            ${isDrop ? 'Thông tin điểm giao hàng' : 'Thông tin điểm lấy hàng'}
+          </h3>
 
-          <div class="gex2RowLink" data-act="back-step4">
-            <div class="gex2IcoBox">${p.svc.icon}</div>
-            <div style="flex:1">
-              <div style="font-weight:700;font-size:14.5px">${esc(p.svc.eta)}</div>
-              <div style="font-size:12.5px;color:#6b7280">Giao vào ${getEtaTime()} • ${esc(p.svc.name)}</div>
-            </div>
+          <label class="gexFieldLbl">Địa chỉ</label>
+          <div class="gexAddrSelectBtn" data-act="back-step2">
+            <span class="gexEllipsis">${esc(data.title)}</span>
             <span>›</span>
           </div>
 
-          <div class="gex2RowLink" data-act="open-vehicle-modal">
-            <div class="gex2IcoBox">${p.veh.icon}</div>
-            <div style="flex:1">
-              <div style="font-weight:700;font-size:14.5px">${esc(p.veh.name)}</div>
-              <div style="font-size:12.5px;color:#6b7280">${esc(p.veh.spec)}</div>
-            </div>
-            <span>›</span>
-          </div>
+          <label class="gexFieldLbl">Số tầng, số toà nhà</label>
+          <input type="text" class="gexInput" id="gexFloorIn" maxlength="120" placeholder="Thêm số tầng hoặc số căn hộ" value="${esc(data.floor)}">
+          <div class="gexCharCnt"><span id="gexFloorCnt">${data.floor.length}</span>/120</div>
 
-          <div class="gex2RowLink" data-act="go-step5b-item">
-            <div class="gex2IcoBox">📦</div>
-            <div style="flex:1">
-              ${state.item.confirmed
-                ? `<div style="font-weight:700;font-size:14.5px">Cỡ ${esc(state.item.size)} • ${esc(state.item.weight)}kg • ${esc(state.item.cat)}</div><div style="font-size:12.5px;color:#059669">Đảm bảo hàng hóa • 1 Phổ thông ✓</div>`
-                : `<div style="font-weight:700;font-size:14.5px;color:#0284c7">Thêm chi tiết món hàng *</div><div style="font-size:12.5px;color:#6b7280">Đảm bảo hàng hóa • 1 Phổ thông</div>`}
-            </div>
-            <span>›</span>
-          </div>
-        </div>
+          <label class="gexFieldLbl">Tên người liên lạc <span style="color:#dc2626">*</span></label>
+          <input type="text" class="gexInput" id="gexNameIn" placeholder="Tên" value="${esc(data.name)}">
 
-        <div style="font-weight:800;font-size:15.5px;margin:12px 16px 6px">Áp dụng ưu đãi</div>
-        <div class="gex2Card" style="padding:10px 16px">
-          <div class="gex2RowLink" data-act="toggle-promo" style="padding:2px 0">
-            <span>🏷️</span>
-            <div style="flex:1;font-size:14px;font-weight:600">${state.promoActive ? esc(state.promoCode) : 'Chạm để áp dụng ưu đãi 15%'}</div>
-            <span style="color:#00b14f;font-weight:700;font-size:13px">${state.promoActive ? 'Đang dùng' : 'Áp dụng'}</span>
-          </div>
-        </div>
+          <label class="gexFieldLbl">Số điện thoại <span style="color:#dc2626">*</span></label>
+          <input type="tel" class="gexInput" id="gexPhoneIn" placeholder="Số điện thoại" value="${esc(data.phone)}">
 
-        <div style="font-weight:800;font-size:15.5px;margin:12px 16px 6px">Dịch vụ thêm</div>
-        <div class="gex2Card">
-          ${ADDONS.map(a => `
-            <label class="gex2Addon">
-              <input type="checkbox" data-act="toggle-addon" data-id="${a.id}" ${state.addons.has(a.id) ? 'checked' : ''}>
-              <div style="flex:1">
-                <div style="font-weight:600;font-size:14px">${esc(a.name)}</div>
-                ${a.desc ? `<div style="font-size:12px;color:#6b7280">${esc(a.desc)}</div>` : ''}
-              </div>
-              <div style="font-weight:700;font-size:14px">${money(a.price)}</div>
-            </label>`).join('')}
-        </div>
-      </div>
+          <label class="gexFieldLbl">Ghi chú cho tài xế</label>
+          <input type="text" class="gexInput" id="gexNoteIn" placeholder="Ghi chú cho tài xế" value="${esc(data.note)}">
 
-      <div class="gex2Footer">
-        <div data-act="open-fare-modal" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;cursor:pointer">
-          <span style="font-weight:600;font-size:15px">Tổng cộng</span>
-          <div>
-            <strong style="font-size:21px;font-weight:800">${money(p.finalTotal)}</strong>
-            ${p.discount > 0 ? `<del style="color:#6b7280;font-size:14px;margin-left:6px">${money(p.originalTotal)}</del>` : ''}
-          </div>
-        </div>
-        <div style="display:flex;gap:10px">
-          <button type="button" data-act="save-draft" style="width:48px;height:48px;border-radius:50%;border:none;background:#ecfdf5;font-size:18px">🔖</button>
-          <button type="button" class="gex2Btn" data-act="go-step6-review" ${state.item.confirmed ? '' : 'disabled'}>
-            ${state.item.confirmed ? 'Kiểm tra đơn hàng' : 'Thêm chi tiết món hàng *'}
+          <button type="button" class="gexPrimaryBtn" id="gexContactConfirmBtn" data-act="confirm-step3" style="margin-top:16px" ${valid ? '' : 'disabled'}>
+            Xác nhận
           </button>
         </div>
       </div>`;
   }
 
-  /* BƯỚC 5B: CHI TIẾT MÓN HÀNG */
+  /* TRANG 4: CHỌN DỊCH VỤ GIAO HÀNG (TRANG RIÊNG) */
+  function renderStep4Service(p) {
+    return `
+      <div class="gexHeaderBar">
+        <button type="button" class="gexBackPlain" data-act="back-step3">←</button>
+        <h2>Chọn dịch vụ giao</h2>
+        <span style="font-size:12px;font-weight:700;color:#059669">Trang 4/5</span>
+      </div>
+
+      <div class="gexScroll" style="flex:1;overflow-y:auto;padding:14px 20px 100px;background:#fff">
+        <div class="gexMiniRouteBanner">
+          <div><b style="color:#1d74f5">● Từ:</b> ${esc(state.pickup.title)} (${esc(state.pickup.name)})</div>
+          <div style="margin-top:4px"><b style="color:#ea4335">● Đến:</b> ${esc(state.dropoff.title)} (${esc(state.dropoff.name)})</div>
+        </div>
+
+        <h3 style="font-size:19px;font-weight:800;margin:16px 0 12px">Bạn muốn chọn dịch vụ giao nào?</h3>
+
+        ${SERVICES.map(s => {
+          const active = s.id === state.serviceId;
+          const est = Math.round(((s.base + p.km * 4800) * (s.isVan ? 1 : 0.85)) / 1000) * 1000;
+          return `
+            <div class="gexSvcOption ${active ? 'active' : ''}" data-act="pick-service" data-id="${s.id}">
+              <div class="gexSvcBadgeIco" style="background:${s.color}18;color:${s.color}">${s.icon}</div>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <b style="font-size:16px">${esc(s.name)}</b>
+                  <b style="font-size:16px">${s.id === 'saver' ? 'Từ ' : ''}${money(est)}</b>
+                </div>
+                <div style="font-size:13.5px;color:#6b7280;margin-top:2px">${esc(s.desc)}</div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+
+      <div class="gexFooter">
+        <button type="button" class="gexPrimaryBtn" data-act="confirm-step4">
+          Tiếp theo
+        </button>
+      </div>`;
+  }
+
+  /* TRANG 5: CHI TIẾT ĐƠN HÀNG */
+  function renderStep5Detail(p) {
+    const canReview = state.item.confirmed;
+    return `
+      <div class="gexHeaderBar">
+        <button type="button" class="gexBackPlain" data-act="back-step4">←</button>
+        <h2>Chi tiết đơn hàng</h2>
+        <button type="button" class="gexShareBtn" data-act="share-trip" title="Chia sẻ">🔗</button>
+      </div>
+
+      <div class="gexScroll" style="flex:1;overflow-y:auto;padding-bottom:130px">
+        <div class="gexCard">
+          <div class="gexRouteEditBox">
+            <div class="gexDots">
+              <span class="gexDotBlue"></span>
+              <span class="gexDotLine" style="height:34px"></span>
+              <span class="gexDotRed"></span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div class="gexStopBlock" data-act="edit-pickup">
+                <div class="gexAddrTitle">${esc(state.pickup.title)}</div>
+                <div class="gexAddrSub">${esc(state.pickup.name)} • ${esc(state.pickup.phone)}</div>
+              </div>
+              <div class="gexStopBlock" data-act="edit-dropoff" style="border-top:1px solid #f1f5f9;padding-top:10px;margin-top:10px">
+                <div class="gexAddrTitle">${esc(state.dropoff.title)}</div>
+                <div class="gexAddrSub">${esc(state.dropoff.name)} • ${esc(state.dropoff.phone)}</div>
+              </div>
+            </div>
+            <button type="button" class="gexSwapMini" data-act="swap-addr">⇅</button>
+          </div>
+
+          <div class="gexRowLink" data-act="back-step4">
+            <div class="gexSvcIco" style="background:#f3e8ff">${p.svc.icon}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:15px">${esc(p.svc.eta)}</div>
+              <div style="font-size:13px;color:#6b7280">Giao vào ${getEtaTime()} • ${esc(p.svc.name)}</div>
+            </div>
+            <span class="gexChevron">›</span>
+          </div>
+
+          <div class="gexRowLink" data-act="open-vehicle-modal">
+            <div class="gexSvcIco">${p.veh.icon}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:15px">${esc(p.veh.name)}</div>
+              <div style="font-size:13px;color:#6b7280">${esc(p.veh.spec)}</div>
+            </div>
+            <span class="gexChevron">›</span>
+          </div>
+
+          <div class="gexRowLink" data-act="go-step5b-item">
+            <div class="gexSvcIco" style="background:#ffedd5">📦</div>
+            <div style="flex:1">
+              ${state.item.confirmed
+                ? `<div style="font-weight:700;font-size:15px;color:#111827">Cỡ ${esc(state.item.size)} • ${esc(state.item.weight)}kg • ${esc(state.item.cat)}</div>
+                   <div style="font-size:13px;color:#059669">Đảm bảo hàng hóa • 1 Phổ thông ✓</div>`
+                : `<div style="font-weight:700;font-size:15px;color:#0284c7">Thêm chi tiết món hàng *</div>
+                   <div style="font-size:13px;color:#6b7280">Đảm bảo hàng hóa • 1 Phổ thông</div>`}
+            </div>
+            <span class="gexChevron">›</span>
+          </div>
+        </div>
+
+        <div class="gexSecTitle">Áp dụng ưu đãi</div>
+        <div class="gexCard" style="padding:12px 16px">
+          <div class="gexRowLink" data-act="toggle-promo" style="padding:4px 0">
+            <span style="font-size:18px">🏷️</span>
+            <div style="flex:1;font-weight:600;font-size:14.5px;color:${state.promoActive ? '#111827' : '#6b7280'}">
+              ${state.promoActive ? esc(state.promoCode) : 'Chạm để áp dụng ưu đãi giảm 15%'}
+            </div>
+            <span style="font-size:12.5px;font-weight:700;color:#00b14f">${state.promoActive ? 'Đang dùng' : 'Áp dụng'}</span>
+          </div>
+        </div>
+
+        <div class="gexSecTitle">Dịch vụ thêm</div>
+        <div class="gexCard">
+          ${ADDONS.map(a => `
+            <label class="gexAddonRow">
+              <input type="checkbox" data-act="toggle-addon" data-id="${a.id}" ${state.addons.has(a.id) ? 'checked' : ''}>
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:14.5px;color:#111827">${esc(a.name)}</div>
+                ${a.desc ? `<div style="font-size:12.5px;color:#6b7280;margin-top:2px">${esc(a.desc)}</div>` : ''}
+              </div>
+              <div style="font-weight:600;font-size:14.5px;color:#111827">${money(a.price)}</div>
+            </label>`).join('')}
+        </div>
+      </div>
+
+      <div class="gexBottomCheckout">
+        <div class="gexTotalRow" data-act="open-fare-modal">
+          <span>Tổng cộng</span>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <strong class="gexFinalPrice">${money(p.finalTotal)}</strong>
+            ${p.discount > 0 ? `<del class="gexOldPrice">${money(p.originalTotal)}</del>` : ''}
+            <span style="font-size:13px;color:#4b5563">⌃</span>
+          </div>
+        </div>
+        <div class="gexBtnRow">
+          <button type="button" class="gexBookmarkBtn" data-act="save-draft" title="Lưu nháp">🔖</button>
+          <button type="button" class="gexPrimaryBtn" data-act="go-step6-review" ${canReview ? '' : 'disabled'}>
+            ${canReview ? 'Kiểm tra đơn hàng' : 'Thêm chi tiết món hàng để tiếp tục'}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  /* TRANG 5B: CHI TIẾT MÓN HÀNG */
   function renderStep5bItem() {
     const valid = Number(state.item.weight) > 0 && Boolean(state.item.cat);
     return `
-      <div class="gex2Header">
-        <button type="button" class="gex2RoundBtn" data-act="back-step5">←</button>
+      <div class="gexHeaderBar">
+        <button type="button" class="gexBackPlain" data-act="back-step5">←</button>
         <h2>Chi tiết món hàng</h2>
-        <span style="width:38px"></span>
+        <span style="width:36px"></span>
       </div>
-      <div class="gex2Scroll" style="padding:14px 18px 130px;background:#fff">
-        <p style="margin:0 0 14px;font-size:14px;color:#4b5563">Thông tin này giúp tài xế sắp xếp và bảo quản hàng đúng cách.</p>
-        <div style="text-align:center;font-size:48px;padding:8px 0">🧑‍✈️📦 <span style="font-size:12px;color:#6b7280;display:block">20 × 20 × 25cm</span></div>
-        <label class="gex2Lbl">Kích cỡ *</label>
-        <div class="gex2Pills">
-          ${['S', 'M', 'L', 'XL'].map(sz => `<button type="button" class="gex2PillBtn ${state.item.size === sz ? 'active' : ''}" data-act="pick-size" data-val="${sz}">${sz}</button>`).join('')}
+
+      <div class="gexScroll" style="flex:1;overflow-y:auto;padding:12px 20px 140px;background:#fff">
+        <p style="font-size:14.5px;color:#4b5563;margin:0 0 16px">
+          Thông tin này giúp tài xế sắp xếp và bảo quản hàng đúng cách.
+        </p>
+
+        <div class="gexBoxDiagram">
+          <div class="gexShipperBox">
+            <span class="gexDimTop">20cm</span>
+            <span class="gexDimLeft">20cm</span>
+            <div style="font-size:52px">🧑‍✈️📦</div>
+            <span class="gexDimBot">25cm</span>
+          </div>
         </div>
-        <label class="gex2Lbl">Trọng lượng (kg) *</label>
-        <input type="number" id="gexWeightIn" class="gex2Input" min="0.1" step="0.1" placeholder="Ví dụ: 1.5" value="${esc(state.item.weight)}">
-        <label class="gex2Lbl">Loại hàng hoá *</label>
-        <div class="gex2Pills">
-          ${ITEM_CATS.map(c => `<button type="button" class="gex2PillBtn ${state.item.cat === c.label ? 'active' : ''}" data-act="pick-cat" data-val="${esc(c.label)}">${esc(c.label)} ${c.icon}</button>`).join('')}
+
+        <div class="gexSizeWeightGrid">
+          <div>
+            <div class="gexFieldLbl">Kích cỡ<span style="color:#dc2626">*</span></div>
+            <div class="gexSizePills">
+              ${['S', 'M', 'L', 'XL'].map(sz => `
+                <button type="button" class="gexSizeBtn ${state.item.size === sz ? 'active' : ''}" data-act="pick-size" data-val="${sz}">${sz}</button>
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="gexFieldLbl">Trọng lượng<span style="color:#dc2626">*</span></div>
+            <div class="gexWeightWrap">
+              <input type="number" id="gexWeightIn" min="0.1" max="1000" step="0.1" placeholder="1" value="${esc(state.item.weight)}">
+              <span>kg</span>
+            </div>
+          </div>
+        </div>
+
+        <label class="gexPhotoBox ${state.item.photo ? 'hasImg' : ''}" style="display:block;margin-top:18px">
+          <input type="file" id="gexPhotoFile" accept="image/*" hidden>
+          ${state.item.photo
+            ? `<img src="${state.item.photo}" class="gexPhotoPreview" alt="Ảnh gói hàng"><div style="font-size:13px;color:#059669;font-weight:700">Chạm để đổi ảnh gói hàng</div>`
+            : `<div style="display:flex;align-items:center;justify-content:center;gap:10px;color:#374151;font-weight:600">
+                 <span style="font-size:20px">📷</span>
+                 <span>Thêm ảnh (Không bắt buộc)</span>
+               </div>`}
+        </label>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px">
+          <div class="gexFieldLbl" style="margin:0">Loại hàng hoá<span style="color:#dc2626">*</span></div>
+          <button type="button" class="gexProhibitedLink" data-act="show-prohibited">Mặt hàng nào bị cấm?</button>
+        </div>
+
+        <div class="gexTagPills">
+          ${ITEM_CATS.map(c => `
+            <button type="button" class="gexTagBtn ${state.item.cat === c.label ? 'active' : ''}" data-act="pick-cat" data-val="${esc(c.label)}">
+              ${esc(c.label)} ${c.icon}
+            </button>
+          `).join('')}
         </div>
       </div>
-      <div class="gex2Footer">
-        <div style="background:#065f46;color:#fff;font-size:12.5px;padding:8px 12px;border-radius:10px;margin-bottom:8px">
+
+      <div class="gexFooter" style="background:#fff">
+        <div class="gexGuaranteeBanner">
           Mới! Ra mắt gói Phổ thông với mức bồi thường lên đến 3.000.000đ
         </div>
-        <button type="button" class="gex2Btn" id="gexItemConfirmBtn" data-act="confirm-step5b" ${valid ? '' : 'disabled'}>Xác nhận</button>
+        <button type="button" class="gexPrimaryBtn" id="gexItemConfirmBtn" data-act="confirm-step5b" ${valid ? '' : 'disabled'}>
+          Xác nhận
+        </button>
       </div>`;
   }
 
-  /* BƯỚC 6: XÁC NHẬN ĐẶT ĐƠN */
+  /* TRANG 6: XÁC NHẬN ĐẶT ĐƠN */
   function renderStep6Review(p) {
     return `
-      <div class="gex2Header">
-        <button type="button" class="gex2RoundBtn" data-act="back-step5">←</button>
+      <div class="gexHeaderBar">
+        <button type="button" class="gexBackPlain" data-act="back-step5">←</button>
         <h2>Xác nhận đơn giao hàng</h2>
-        <span style="width:38px"></span>
+        <span style="width:36px"></span>
       </div>
-      <div class="gex2Scroll">
-        <div class="gex2Card">
-          <div style="font-weight:800;margin-bottom:8px">Lộ trình (${p.km} km)</div>
-          <div style="font-size:13.5px;margin-bottom:6px"><b style="color:#2563eb">● Lấy:</b> ${esc(state.pickup.title)} (${esc(state.pickup.name)})</div>
-          <div style="font-size:13.5px"><b style="color:#ef4444">● Giao:</b> ${esc(state.dropoff.title)} (${esc(state.dropoff.name)})</div>
+
+      <div class="gexScroll" style="flex:1;overflow-y:auto;padding-bottom:100px">
+        <div class="gexCard">
+          <div style="font-weight:800;font-size:15px;margin-bottom:10px">Lộ trình giao hàng (${p.km} km)</div>
+          <div style="font-size:13.5px;margin-bottom:8px">
+            <b style="color:#1d74f5">● Điểm lấy:</b> ${esc(state.pickup.title)}<br>
+            <span style="color:#6b7280">${esc(state.pickup.name)} • ${esc(state.pickup.phone)}</span>
+          </div>
+          <div style="font-size:13.5px">
+            <b style="color:#ea4335">● Điểm giao:</b> ${esc(state.dropoff.title)}<br>
+            <span style="color:#6b7280">${esc(state.dropoff.name)} • ${esc(state.dropoff.phone)}</span>
+          </div>
         </div>
-        <div class="gex2Card" style="font-size:13.5px;line-height:1.7">
-          <div>• Dịch vụ: <b>${esc(p.svc.name)} — ${esc(p.veh.name)}</b></div>
-          <div>• Hàng hóa: <b>Cỡ ${esc(state.item.size)} • ${esc(state.item.weight)}kg • ${esc(state.item.cat)}</b></div>
-          <div>• Thanh toán: <b>Tiền mặt</b></div>
+
+        <div class="gexCard">
+          <div style="font-weight:800;font-size:15px;margin-bottom:8px">Gói dịch vụ & Hàng hóa</div>
+          <div style="font-size:13.5px;line-height:1.7;color:#374151">
+            • Gói giao: <b>${esc(p.svc.name)}</b> (${esc(p.veh.name)})<br>
+            • Hàng hóa: <b>Cỡ ${esc(state.item.size)} • ${esc(state.item.weight)}kg • ${esc(state.item.cat)}</b><br>
+            • Thanh toán: <b>Tiền mặt khi lấy/giao hàng</b>
+          </div>
         </div>
-        <div class="gex2Card" style="font-size:14px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Cước phí</span><b>${money(p.baseRaw)}</b></div>
-          ${p.addonSum > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Dịch vụ thêm</span><b>${money(p.addonSum)}</b></div>` : ''}
-          ${p.discount > 0 ? `<div style="display:flex;justify-content:space-between;color:#059669;margin-bottom:6px"><span>Ưu đãi 15%</span><b>-${money(p.discount)}</b></div>` : ''}
-          <div style="display:flex;justify-content:space-between;border-top:1px dashed #d1d5db;padding-top:8px;font-size:17px"><b>Tổng thanh toán</b><b>${money(p.finalTotal)}</b></div>
+
+        <div class="gexCard">
+          <div style="font-weight:800;font-size:15px;margin-bottom:8px">Chi tiết cước phí</div>
+          <div class="gexFareLine"><span>Cước vận chuyển (${p.km} km)</span><span>${money(p.baseRaw)}</span></div>
+          ${p.addonSum > 0 ? `<div class="gexFareLine"><span>Dịch vụ thêm (${state.addons.size})</span><span>${money(p.addonSum)}</span></div>` : ''}
+          ${p.discount > 0 ? `<div class="gexFareLine" style="color:#059669"><span>Ưu đãi 15%</span><span>-${money(p.discount)}</span></div>` : ''}
+          <div class="gexFareLine total"><span>Tổng thanh toán</span><span>${money(p.finalTotal)}</span></div>
         </div>
       </div>
-      <div class="gex2Footer">
-        <button type="button" class="gex2Btn" data-act="submit-order">Đặt giao hàng • ${money(p.finalTotal)}</button>
+
+      <div class="gexFooter">
+        <button type="button" class="gexPrimaryBtn" data-act="submit-order">
+          Đặt giao hàng • ${money(p.finalTotal)}
+        </button>
       </div>`;
   }
 
+  /* MODAL LOẠI XE */
   function renderVehicleModal(p) {
     return `
-      <div class="gex2ModalBg" data-act="close-modal">
-        <div class="gex2ModalBox" onclick="event.stopPropagation()">
-          <div class="gex2Handle"></div>
-          <h3 style="margin:0 0 12px;font-size:18px;font-weight:800">Loại xe</h3>
+      <div class="gexSheetOverlay" data-act="close-modal">
+        <div class="gexBottomModal" onclick="event.stopPropagation()">
+          <div class="gexSheetHandle"></div>
+          <h3 style="font-size:20px;font-weight:800;margin:6px 0 14px">Loại xe</h3>
           ${VEHICLES.map(v => {
+            const active = v.id === state.vehicleId;
             const est = Math.round(((p.svc.base + p.km * 4800) * (v.id === 'bike' ? 1 : v.mult * 0.78) * 0.85) / 1000) * 1000;
             return `
-              <div class="gex2SvcItem ${v.id === state.vehicleId ? 'active' : ''}" data-act="pick-vehicle" data-id="${v.id}">
-                <div class="gex2IcoBox">${v.icon}</div>
+              <div class="gexSvcOption ${active ? 'active' : ''}" data-act="pick-vehicle" data-id="${v.id}">
+                <div class="gexSvcBadgeIco">${v.icon}</div>
                 <div style="flex:1">
-                  <div style="display:flex;justify-content:space-between"><b>${esc(v.name)}</b><b>${money(est)}</b></div>
-                  <div style="font-size:12.5px;color:#6b7280">${esc(v.spec)}</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <b style="font-size:16px">${esc(v.name)}</b>
+                    <b style="font-size:16px">${money(est)}</b>
+                  </div>
+                  <div style="font-size:13.5px;color:#6b7280;margin-top:2px">${esc(v.spec)}</div>
                 </div>
               </div>`;
           }).join('')}
@@ -704,17 +606,18 @@
       </div>`;
   }
 
+  /* MODAL CHI TIẾT GIÁ */
   function renderFareModal(p) {
     return `
-      <div class="gex2ModalBg" data-act="close-modal">
-        <div class="gex2ModalBox" onclick="event.stopPropagation()">
-          <div class="gex2Handle"></div>
-          <h3 style="margin:0 0 10px;font-size:18px;font-weight:800">Chi tiết giá cước</h3>
-          <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Cước gói ${esc(p.svc.name)}</span><b>${money(p.baseRaw)}</b></div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Dịch vụ thêm</span><b>${money(p.addonSum)}</b></div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;color:#059669"><span>Ưu đãi</span><b>-${money(p.discount)}</b></div>
-          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px dashed #ccc;font-size:17px"><b>Tổng cộng</b><b>${money(p.finalTotal)}</b></div>
-          <button type="button" class="gex2Btn" data-act="close-modal" style="margin-top:8px">Đóng</button>
+      <div class="gexSheetOverlay" data-act="close-modal">
+        <div class="gexBottomModal" onclick="event.stopPropagation()">
+          <div class="gexSheetHandle"></div>
+          <h3 style="font-size:19px;font-weight:800;margin:6px 0 12px">Chi tiết giá cước</h3>
+          <div class="gexFareLine"><span>Gói ${esc(p.svc.name)} (${p.km} km)</span><span>${money(p.baseRaw)}</span></div>
+          <div class="gexFareLine"><span>Dịch vụ thêm</span><span>${money(p.addonSum)}</span></div>
+          <div class="gexFareLine" style="color:#059669"><span>Ưu đãi áp dụng</span><span>-${money(p.discount)}</span></div>
+          <div class="gexFareLine total"><span>Tổng cộng</span><span>${money(p.finalTotal)}</span></div>
+          <button type="button" class="gexPrimaryBtn" data-act="close-modal" style="margin-top:14px">Đóng</button>
         </div>
       </div>`;
   }
@@ -725,9 +628,19 @@
     if (!el || typeof L === 'undefined') return;
     if (mapInstance) { mapInstance.remove(); mapInstance = null; }
     const pt = state.step === 'step2_map' ? state.tempPin : (state.mapTarget === 'dropoff' ? state.dropoff : state.pickup);
+
     mapInstance = L.map(el, { zoomControl: false }).setView([pt.lat, pt.lng], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
-    mapMarker = L.marker([pt.lat, pt.lng], { draggable: state.step === 'step2_map' }).addTo(mapInstance);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
+
+    const redPin = L.divIcon({
+      className: 'gexCustomPin',
+      html: `<div class="gexRedMarker"><span></span></div>`,
+      iconSize: [36, 44],
+      iconAnchor: [18, 42]
+    });
+
+    mapMarker = L.marker([pt.lat, pt.lng], { icon: redPin, draggable: state.step === 'step2_map' }).addTo(mapInstance);
+
     if (state.step === 'step2_map') {
       mapInstance.on('click', e => updatePinCoords(e.latlng.lat, e.latlng.lng));
       mapMarker.on('dragend', () => { const ll = mapMarker.getLatLng(); updatePinCoords(ll.lat, ll.lng); });
@@ -735,13 +648,14 @@
   }
 
   async function updatePinCoords(lat, lng) {
-    state.tempPin.lat = lat; state.tempPin.lng = lng;
+    state.tempPin.lat = lat;
+    state.tempPin.lng = lng;
     if (mapMarker) mapMarker.setLatLng([lat, lng]);
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=vi`);
-      const d = await res.json();
-      if (d?.display_name) {
-        const parts = d.display_name.split(',');
+      const data = await res.json();
+      if (data?.display_name) {
+        const parts = data.display_name.split(',');
         state.tempPin.title = parts.slice(0, 2).join(', ').trim();
         state.tempPin.sub = parts.slice(2, 5).join(', ').trim();
         render();
@@ -758,14 +672,14 @@
         const parts = arr[0].display_name.split(',');
         state.tempPin = { title: parts.slice(0, 2).join(', ').trim(), sub: parts.slice(2, 5).join(', ').trim(), lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) };
         render();
-      }
+      } else showToast('Không tìm thấy địa chỉ, hãy chạm lên bản đồ');
     } catch {}
   }
 
-  /* ================== SỰ KIỆN ================== */
+  /* ================== SỰ KIỆN ĐIỀU HƯỚNG ================== */
   document.addEventListener('click', e => {
     const btn = e.target.closest('[data-act]');
-    if (!btn || $('#gexV2Root')?.hidden) return;
+    if (!btn || $('#gnExpressWizard')?.style.display === 'none') return;
     const act = btn.dataset.act;
 
     if (act === 'exit') closeExpress();
@@ -776,14 +690,39 @@
     else if (act === 'back-step3') { state.step = 'step3_contact'; render(); }
     else if (act === 'back-step4') { state.step = 'step4_service'; render(); }
     else if (act === 'back-step5') { state.step = 'step5_detail'; render(); }
-    else if (act === 'go-step2-drop') { state.mapTarget = 'dropoff'; state.tempPin = state.dropoff.title ? { ...state.dropoff } : { ...QUICK_PLACES[0] }; state.step = 'step2_map'; render(); }
-    else if (act === 'go-step2-pick') { state.mapTarget = 'pickup'; state.tempPin = { ...state.pickup }; state.step = 'step2_map'; render(); }
-    else if (act === 'quick-place') { const pl = QUICK_PLACES[Number(btn.dataset.idx)]; if (pl) { state.mapTarget = 'dropoff'; state.tempPin = { ...pl }; state.step = 'step2_map'; render(); } }
-    else if (act === 'swap-addr') { if (!state.dropoff.title) return showToast('Vui lòng chọn điểm đến trước'); const t = { ...state.pickup }; state.pickup = { ...state.dropoff }; state.dropoff = t; render(); }
+
+    else if (act === 'go-step2-drop') {
+      state.mapTarget = 'dropoff';
+      state.tempPin = state.dropoff.title ? { ...state.dropoff } : { ...QUICK_PLACES[0] };
+      state.step = 'step2_map';
+      render();
+    }
+    else if (act === 'go-step2-pick') {
+      state.mapTarget = 'pickup';
+      state.tempPin = { ...state.pickup };
+      state.step = 'step2_map';
+      render();
+    }
+    else if (act === 'quick-place') {
+      const pl = QUICK_PLACES[Number(btn.dataset.idx)];
+      if (pl) {
+        state.mapTarget = 'dropoff';
+        state.tempPin = { title: pl.title, sub: pl.sub, lat: pl.lat, lng: pl.lng };
+        state.step = 'step2_map';
+        render();
+      }
+    }
+    else if (act === 'swap-addr') {
+      if (!state.dropoff.title) return showToast('Vui lòng chọn điểm đến trước');
+      const tmp = { ...state.pickup }; state.pickup = { ...state.dropoff }; state.dropoff = tmp; render();
+    }
     else if (act === 'search-map') searchMapAddress($('#gexMapSearchInput')?.value || '');
+    else if (act === 'locate-gps') {
+      navigator.geolocation?.getCurrentPosition(pos => updatePinCoords(pos.coords.latitude, pos.coords.longitude), () => showToast('Không lấy được GPS'));
+    }
     else if (act === 'confirm-step2') {
       const target = state.mapTarget === 'dropoff' ? state.dropoff : state.pickup;
-      Object.assign(target, { title: state.tempPin.title, sub: state.tempPin.sub, lat: state.tempPin.lat, lng: state.tempPin.lng });
+      target.title = state.tempPin.title; target.sub = state.tempPin.sub; target.lat = state.tempPin.lat; target.lng = state.tempPin.lng;
       state.step = 'step3_contact'; render();
     }
     else if (act === 'confirm-step3') {
@@ -796,7 +735,12 @@
       if (state.promoActive) state.toast = 'Đã áp dụng ưu đãi!';
       render();
     }
-    else if (act === 'pick-service') { state.serviceId = btn.dataset.id; render(); }
+    else if (act === 'pick-service') {
+      state.serviceId = btn.dataset.id;
+      if (state.serviceId.startsWith('van_') && state.vehicleId === 'bike') state.vehicleId = 'van500';
+      else if (!state.serviceId.startsWith('van_') && state.vehicleId !== 'bike') state.vehicleId = 'bike';
+      render();
+    }
     else if (act === 'confirm-step4') { state.step = 'step5_detail'; render(); }
     else if (act === 'edit-pickup') { state.mapTarget = 'pickup'; state.step = 'step3_contact'; render(); }
     else if (act === 'edit-dropoff') { state.mapTarget = 'dropoff'; state.step = 'step3_contact'; render(); }
@@ -810,36 +754,36 @@
     else if (act === 'confirm-step5b') { state.item.confirmed = true; state.step = 'step5_detail'; render(); }
     else if (act === 'go-step6-review') { state.step = 'step6_review'; render(); }
     else if (act === 'toggle-promo') { state.promoActive = !state.promoActive; showToast(state.promoActive ? 'Đã áp dụng ưu đãi!' : 'Đã gỡ mã ưu đãi'); }
-    else if (act === 'apply-promo') { state.promoActive = true; state.promoCode = btn.dataset.code; showToast('Đã áp dụng ưu đãi!'); }
+    else if (act === 'apply-promo-card') { state.promoActive = true; state.promoCode = btn.dataset.code; showToast('Đã áp dụng ưu đãi!'); }
     else if (act === 'select-van') { state.serviceId = 'van_priority'; state.vehicleId = 'van500'; state.mapTarget = 'dropoff'; state.tempPin = { ...QUICK_PLACES[0] }; state.step = 'step2_map'; render(); }
-    else if (act === 'save-draft') showToast('Đã lưu đơn nháp');
-    else if (act === 'share-trip') showToast('Đã sao chép liên kết theo dõi!');
-    else if (act === 'submit-order') {
-      const p = calcPricing();
-      const orderId = 'GE' + Date.now().toString().slice(-6);
-      try {
-        const list = JSON.parse(localStorage.getItem('gn_orders') || '[]');
-        list.unshift({ id: orderId, type: 'express', status: 'Đang tìm tài xế', createdAt: new Date().toISOString(), store: `GoExpress • ${p.svc.name}`, total: p.finalTotal, items: [{ name: `${state.pickup.title} → ${state.dropoff.title}`, qty: 1, price: p.finalTotal }] });
-        localStorage.setItem('gn_orders', JSON.stringify(list));
-      } catch {}
-      alert(`Đặt giao hàng thành công! Mã đơn #${orderId} (${money(p.finalTotal)})`);
-      closeExpress();
-      document.querySelector('[data-go="orders"]')?.click();
-    }
+    else if (act === 'save-draft') showToast('Đã lưu đơn hàng vào mục nháp');
+    else if (act === 'share-trip') showToast('Đã sao chép liên kết theo dõi đơn hàng!');
+    else if (act === 'show-prohibited') alert('Hàng cấm: Chất cháy nổ, vũ khí, chất cấm, tiền mặt giá trị lớn, động vật sống.');
+    else if (act === 'submit-order') createExpressOrder();
   });
 
   document.addEventListener('change', e => {
     const t = e.target;
-    if ($('#gexV2Root')?.hidden) return;
+    if ($('#gnExpressWizard')?.style.display === 'none') return;
     if (t.dataset.act === 'toggle-addon') {
       if (t.checked) state.addons.add(t.dataset.id); else state.addons.delete(t.dataset.id);
       render();
+    }
+    if (t.id === 'gexPhotoFile' && t.files?.[0]) {
+      const r = new FileReader();
+      r.onload = () => { state.item.photo = r.result; render(); };
+      r.readAsDataURL(t.files[0]);
     }
   });
 
   document.addEventListener('input', e => {
     const t = e.target;
-    if ($('#gexV2Root')?.hidden) return;
+    if ($('#gnExpressWizard')?.style.display === 'none') return;
+    if (t.id === 'gexFloorIn') {
+      const target = state.mapTarget === 'dropoff' ? state.dropoff : state.pickup;
+      target.floor = t.value;
+      const cnt = $('#gexFloorCnt'); if (cnt) cnt.textContent = t.value.length;
+    }
     if (t.id === 'gexNameIn' || t.id === 'gexPhoneIn') {
       const target = state.mapTarget === 'dropoff' ? state.dropoff : state.pickup;
       if (t.id === 'gexNameIn') target.name = t.value;
@@ -854,31 +798,75 @@
     }
   });
 
+  function createExpressOrder() {
+    const p = calcPricing();
+    const orderId = 'GE' + Date.now().toString().slice(-6);
+    const newOrder = {
+      id: orderId, type: 'express', status: 'Đang tìm tài xế', createdAt: new Date().toISOString(),
+      store: `GoExpress • ${p.svc.name} (${p.veh.name})`, from: state.pickup.title, to: state.dropoff.title,
+      receiver: `${state.dropoff.name} (${state.dropoff.phone})`,
+      itemSummary: `Cỡ ${state.item.size} • ${state.item.weight}kg • ${state.item.cat}`,
+      total: p.finalTotal, items: [{ name: `Giao hàng ${p.svc.name} (${p.km} km)`, qty: 1, price: p.finalTotal }]
+    };
+    try {
+      const list = JSON.parse(localStorage.getItem('gn_orders') || '[]');
+      list.unshift(newOrder);
+      localStorage.setItem('gn_orders', JSON.stringify(list));
+    } catch {}
+
+    const overlay = document.createElement('div');
+    overlay.className = 'gexSuccessOverlay';
+    overlay.style.zIndex = '100000';
+    overlay.innerHTML = `
+      <div class="gexSuccessCard">
+        <div class="gexCheckWrap"><div class="gexRadarRing"></div><div class="gexCheckCircle">✓</div></div>
+        <h3 style="margin:0 0 6px;font-size:21px;font-weight:800">Đặt giao hàng thành công!</h3>
+        <p style="margin:0;color:#4b5563;font-size:14px">Mã đơn <b>#${orderId}</b> • Cước phí <b>${money(p.finalTotal)}</b></p>
+        <div class="gexDriverPingBadge"><span class="gexPingDot"></span><span>Đang kết nối tài xế ${esc(p.veh.name)} gần bạn...</span></div>
+        <button type="button" class="gexPrimaryBtn" id="gexDoneGoOrders">Theo dõi đơn hàng</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    $('#gexDoneGoOrders', overlay).onclick = () => { overlay.remove(); closeExpress(); document.querySelector('[data-go="orders"]')?.click(); };
+  }
+
   function openExpress() {
     state.step = 'step1_home';
     state.modal = null;
     const root = ensureRoot();
-    root.hidden = false;
+    root.style.display = 'flex';
+    document.body.classList.add('noScroll');
     render();
   }
 
   function closeExpress() {
-    const root = $('#gexV2Root');
-    if (root) root.hidden = true;
+    const root = $('#gnExpressWizard');
+    if (root) root.style.display = 'none';
+    document.body.classList.remove('noScroll');
   }
 
-  // Chặn mọi nút Giao hàng trên toàn trang để mở giao diện mới này
+  // Chặn mọi nút bấm mở giao diện Express cũ và chuyển sang giao diện từng trang mới
   document.addEventListener('click', e => {
-    if (e.target.closest('#gexV2Root')) return;
-    const el = e.target.closest('button, a, div, li');
-    if (!el) return;
-    const txt = (el.textContent || '').trim().toLowerCase();
-    if (el.dataset.go === 'express' || el.dataset.svc === 'express' || (txt === 'giao hàng' && el.children.length <= 2)) {
+    const trigger = e.target.closest('button, a, [data-go], [data-svc], .qk, .navIt');
+    if (!trigger || trigger.closest('#gnExpressWizard')) return;
+    const txt = trigger.textContent.trim().toLowerCase();
+    const go = (trigger.dataset.go || trigger.dataset.svc || '').toLowerCase();
+    if (go === 'express' || txt === 'giao hàng' || txt.includes('giao hàng')) {
       e.preventDefault();
       e.stopImmediatePropagation();
       openExpress();
     }
   }, true);
 
+  // Nếu trang Express cũ vô tình mở lên, tự động chuyển sang giao diện từng trang mới
+  const obs = new MutationObserver(() => {
+    const oldView = document.querySelector('#view-express, #expressView, .express-page');
+    if (oldView && !oldView.hidden && oldView.offsetParent !== null) {
+      oldView.hidden = true;
+      openExpress();
+    }
+  });
+  obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['hidden', 'class', 'style'] });
+
   window.openGoExpress = openExpress;
 })();
+
